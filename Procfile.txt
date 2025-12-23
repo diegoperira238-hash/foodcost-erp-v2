@@ -1,1 +1,0 @@
-web: gunicorn FoodCost_Ultimate_ERP_v8:app
