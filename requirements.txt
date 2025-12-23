@@ -2,4 +2,5 @@ Flask==3.1.0
 Flask-SQLAlchemy==3.1.1
 SQLAlchemy>=2.0.31
 gunicorn==23.0.0
-psycopg[binary]==3.3.2  # ← ESTA É A LINHA IMPORTANTE!
+psycopg[binary]==3.2.1
+python-dotenv==1.0.0
