@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1"><i class="fas fa-history text-primary me-2"></i>Logs de Acesso</h1>
+            <p class="text-muted mb-0">Registro completo de acessos ao sistema</p>
+        </div>
+        <a href="/config/admin" class="btn btn-admin-primary">
+            <i class="fas fa-arrow-left me-2"></i> Voltar
+        </a>
+    </div>
+    
+    <!-- Filtros -->
+    <div class="card admin-card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-2">
+                <div class="col-md-3">
+                    <input type="text" name="search" class="form-control form-control-admin" 
+                           placeholder="Buscar por IP ou motivo..." value="{{ request.args.get('search', '') }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="tipo" class="form-control form-control-admin">
+                        <option value="">Todos os tipos</option>
+                        <option value="autorizado">Autorizados</option>
+                        <option value="nao_autorizado">Não autorizados</option>
+                        <option value="licenca">Licenças</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <input type="date" name="data_inicio" class="form-control form-control-admin" 
+                           value="{{ request.args.get('data_inicio', '') }}">
+                </div>
+                <div class="col-md-2">
+                    <input type="date" name="data_fim" class="form-control form-control-admin" 
+                           value="{{ request.args.get('data_fim', '') }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-admin-primary w-100">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Tabela de Logs -->
+    <div class="card admin-card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-admin">
+                    <thead>
+                        <tr>
+                            <th width="150">Data/Hora</th>
+                            <th>Loja</th>
+                            <th>Usuário</th>
+                            <th>IP</th>
+                            <th>Fingerprint</th>
+                            <th>Motivo</th>
+                            <th width="100">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs.items %}
+                        <tr>
+                            <td>
+                                <small>{{ log.data.strftime('%d/%m/%Y') }}</small><br>
+                                <small class="text-muted">{{ log.data.strftime('%H:%M:%S') }}</small>
+                            </td>
+                            <td>
+                                {% if log.loja %}
+                                {{ log.loja.nome }}
+                                {% else %}
+                                <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if log.usuario %}
+                                {{ log.usuario.username }}
+                                {% else %}
+                                <span class="text-muted">Sistema</span>
+                                {% endif %}
+                            </td>
+                            <td><code>{{ log.ip }}</code></td>
+                            <td>
+                                {% if log.fingerprint %}
+                                <small>{{ log.fingerprint[:15] }}...</small>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ log.motivo }}</td>
+                            <td>
+                                {% if 'AUTORIZADO' in log.motivo %}
+                                <span class="badge bg-success">OK</span>
+                                {% elif 'NAO_AUTORIZADO' in log.motivo %}
+                                <span class="badge bg-danger">BLOQUEADO</span>
+                                {% else %}
+                                <span class="badge bg-info">INFO</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="fas fa-info-circle fa-2x mb-3"></i><br>
+                                Nenhum log encontrado
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Paginação -->
+            {% if logs.pages > 1 %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if logs.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ logs.prev_num }}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in logs.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                    {% if page_num %}
+                    <li class="page-item {% if page_num == logs.page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if logs.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ logs.next_num }}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>💻 Máquinas Cadastradas</h1>
+        <div>
+            <a href="/config/admin" class="btn btn-primary">
+                ← Voltar
+            </a>
+            <a href="/maquina/nova" class="btn btn-success">
+                <i class="fas fa-plus"></i> Nova Máquina
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            {% if maquinas %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Fingerprint</th>
+                            <th>Loja</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in maquinas %}
+                        <tr>
+                            <td>{{ m.id }}</td>
+                            <td>
+                                <code>{{ m.fingerprint[:30] }}...</code>
+                            </td>
+                            <td>
+                                {% if m.loja %}
+                                {{ m.loja.nome }}
+                                {% else %}
+                                <span class="text-muted">Sem loja</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if m.ativa %}
+                                <span class="badge bg-success">Ativa</span>
+                                {% else %}
+                                <span class="badge bg-danger">Bloqueada</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="/toggle_maquina/{{ m.id }}" 
+                                       class="btn btn-{{ 'danger' if m.ativa else 'success' }}">
+                                        {% if m.ativa %}
+                                        <i class="fas fa-ban"></i> Bloquear
+                                        {% else %}
+                                        <i class="fas fa-check"></i> Liberar
+                                        {% endif %}
+                                    </a>
+                                    
+                                    {% if session.usuario_nome == 'bpereira' %}
+                                    <a href="/excluir/maquina/{{ m.id }}" 
+                                       class="btn btn-danger"
+                                       onclick="return confirm('Excluir esta máquina?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center text-muted py-5">
+                <i class="fas fa-laptop fa-3x mb-3"></i>
+                <p>Nenhuma máquina cadastrada</p>
+                <a href="/maquina/nova" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Cadastrar Primeira Máquina
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

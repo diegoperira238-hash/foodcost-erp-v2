@@ -1,400 +1,413 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<div class="container-fluid mt-4">
-    <h1 class="mb-4"><i class="fas fa-shield-alt me-2"></i>Painel de Administração</h1>
-    
-    <!-- Estatísticas -->
+<div class="container mt-4">
+    <!-- CABEÇALHO COM INFORMAÇÕES DO USUÁRIO -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1">🔧 Painel Administrativo</h1>
+            <p class="text-muted mb-0">
+                Usuário: <strong>{{ session.usuario_nome }}</strong> | 
+                Tipo: 
+                {% if session.usuario_nome == 'bpereira' %}
+                    <span class="badge bg-danger">SUPER ADMIN</span>
+                {% elif session.role == 'admin' %}
+                    <span class="badge bg-warning">ADMIN</span>
+                {% else %}
+                    <span class="badge bg-secondary">USUÁRIO</span>
+                {% endif %}
+            </p>
+        </div>
+        
+        <div class="btn-group">
+            {% if session.usuario_nome == 'bpereira' %}
+            <a href="/admin/master" class="btn btn-danger">
+                <i class="fas fa-crown"></i> Painel Master
+            </a>
+            {% endif %}
+            <a href="/admin/historico-chaves" class="btn btn-primary">
+                <i class="fas fa-history"></i> Histórico
+            </a>
+        </div>
+    </div>
+
+    <!-- CARDS DE ESTATÍSTICAS -->
     <div class="row mb-4">
-        <div class="col-md-3 col-sm-6">
-            <div class="card bg-primary text-white shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h6 class="card-title">Lojas</h6>
-                            <h3>{{ stats.total_lojas }}</h3>
-                            <small>{{ stats.lojas_ativas }} ativas</small>
-                        </div>
-                        <i class="fas fa-store fa-3x opacity-50"></i>
-                    </div>
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h2>{{ lojas|length }}/10</h2>
+                    <p class="mb-0">Lojas</p>
+                    <small>
+                        {% set lojas_ativas = lojas|selectattr('ativo', 'equalto', true)|list %}
+                        {{ lojas_ativas|length }} ativas
+                    </small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="card bg-success text-white shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h6 class="card-title">Usuários</h6>
-                            <h3>{{ stats.total_usuarios }}</h3>
-                            <small>{{ stats.usuarios_admin }} administradores</small>
-                        </div>
-                        <i class="fas fa-users fa-3x opacity-50"></i>
-                    </div>
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h2>{{ usuarios|length }}</h2>
+                    <p class="mb-0">Usuários</p>
+                    <small>
+                        {% set admins = usuarios|selectattr('role', 'equalto', 'admin')|list %}
+                        {{ admins|length }} administradores
+                    </small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="card bg-info text-white shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h6 class="card-title">Categorias</h6>
-                            <h3>{{ stats.total_categorias }}</h3>
-                        </div>
-                        <i class="fas fa-tags fa-3x opacity-50"></i>
-                    </div>
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h2>
+                        {% if is_super_admin %}
+                            {{ lojas|sum(attribute='max_maquinas') }}
+                        {% else %}
+                            3
+                        {% endif %}
+                    </h2>
+                    <p class="mb-0">Máquinas (limite)</p>
+                    <small>Gerenciar no menu</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="card bg-warning text-dark shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h6 class="card-title">Unidades</h6>
-                            <h3>{{ stats.total_unidades }}</h3>
-                        </div>
-                        <i class="fas fa-balance-scale fa-3x opacity-50"></i>
-                    </div>
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <a href="/admin/historico-chaves" class="btn btn-primary w-100 mb-2">
+                        <i class="fas fa-history"></i> Histórico
+                    </a>
+                    <a href="/maquinas" class="btn btn-info w-100">
+                        <i class="fas fa-laptop"></i> Máquinas
+                    </a>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Abas -->
-    <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="lojas-tab" data-bs-toggle="tab" data-bs-target="#lojas" type="button">
-                <i class="fas fa-store me-1"></i> Lojas
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="usuarios-tab" data-bs-toggle="tab" data-bs-target="#usuarios" type="button">
-                <i class="fas fa-users me-1"></i> Usuários
-            </button>
-        </li>
+    <!-- GERENCIAR LOJAS -->
+    <!-- GERENCIAR LOJAS -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">🏪 GERENCIAR LOJAS (LIMITE: 10)</h5>
+        <span class="badge bg-{{ 'danger' if lojas|length >= 10 else 'success' }}">
+            {{ lojas|length }}/10
+        </span>
+    </div>
+    <div class="card-body">
         {% if is_super_admin %}
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="maquinas-tab" data-bs-toggle="tab" data-bs-target="#maquinas" type="button">
-                <i class="fas fa-laptop me-1"></i> Máquinas
-            </button>
-        </li>
+        <form method="POST" action="{{ url_for('config_admin') }}" class="mb-3" 
+              id="formCriarLoja" onsubmit="return verificarLimite()">
+            <input type="hidden" name="tipo_acao" value="add_loja">
+            <div class="input-group">
+                <input type="text" name="nome_loja" class="form-control" 
+                       placeholder="Nome da nova loja" required
+                       id="nomeLojaInput">
+                <button class="btn btn-{{ 'danger' if lojas|length >= 10 else 'success' }}" 
+                        type="submit" id="btnCriarLoja"
+                        {{ 'disabled' if lojas|length >= 10 }}>
+                    <i class="fas fa-plus"></i> 
+                    {{ 'LIMITE ATINGIDO' if lojas|length >= 10 else 'Criar Loja' }}
+                </button>
+            </div>
+            <small class="text-muted d-block mt-1">
+                {% if lojas|length >= 10 %}
+                <span class="text-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    LIMITE ATINGIDO! Não é possível criar mais lojas.
+                </span>
+                {% else %}
+                Limite: {{ lojas|length }}/10 lojas | Vagas: {{ 10 - lojas|length }}
+                {% endif %}
+            </small>
+        </form>
         {% endif %}
-    </ul>
+        
+        <!-- ALERTA DE LIMITE -->
+        {% if lojas|length >= 8 %}
+        <div class="alert alert-{{ 'danger' if lojas|length >= 10 else 'warning' }} mb-3">
+            <i class="fas fa-{{ 'exclamation-triangle' if lojas|length >= 10 else 'info-circle' }}"></i>
+            {% if lojas|length >= 10 %}
+            <strong>LIMITE MÁXIMO ATINGIDO!</strong> 
+            Sistema com {{ lojas|length }}/10 lojas. Não é possível criar mais.
+            {% elif lojas|length >= 9 %}
+            <strong>ATENÇÃO!</strong> 
+            Sistema com {{ lojas|length }}/10 lojas. Apenas {{ 10 - lojas|length }} vaga disponível.
+            {% else %}
+            <strong>AVISO:</strong> 
+            Sistema com {{ lojas|length }}/10 lojas. {{ 10 - lojas|length }} vagas disponíveis.
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <!-- ... resto da tabela de lojas continua igual ... -->
     
-    <div class="tab-content" id="adminTabsContent">
-        <!-- TAB LOJAS -->
-        <div class="tab-pane fade show active" id="lojas" role="tabpanel">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-store me-2"></i>Gestão de Lojas</h5>
+    <!-- GERENCIAR USUÁRIOS -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">👥 GERENCIAR USUÁRIOS</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('config_admin') }}" class="mb-3">
+                <input type="hidden" name="tipo_acao" value="add_user">
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <input type="text" name="username" class="form-control" placeholder="Username" required>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="password" name="password" class="form-control" placeholder="Senha" required>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="loja_id" class="form-control">
+                            <option value="">Selecionar Loja</option>
+                            {% for loja in lojas if loja.ativo %}
+                            <option value="{{ loja.id }}">{{ loja.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select name="role" class="form-control">
+                            <option value="user">Usuário</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="card-body">
-                    {% if is_super_admin %}
-                    <form method="POST" action="{{ url_for('config_admin') }}" class="mb-4">
-                        <input type="hidden" name="tipo_acao" value="add_loja">
-                        <div class="input-group">
-                            <input type="text" name="nome_loja" class="form-control" placeholder="Nome da nova loja" required>
-                            <button class="btn btn-success" type="submit"><i class="fas fa-plus me-1"></i>Criar Loja</button>
-                        </div>
-                    </form>
-                    {% endif %}
-                    
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Nome</th>
-                                    <th>Status</th>
-                                    <th>Criada em</th>
-                                    <th>Licença</th>
-                                    {% if is_super_admin %}
-                                    <th>Ações</th>
-                                    {% endif %}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for loja in lojas %}
-                                <tr>
-                                    <td>{{ loja.id }}</td>
-                                    <td><strong>{{ loja.nome }}</strong></td>
-                                    <td>
-                                        {% if loja.ativo %}
-                                        <span class="badge bg-success">ATIVA</span>
-                                        {% else %}
-                                        <span class="badge bg-danger">BLOQUEADA</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ loja.criado_em.strftime('%d/%m/%Y') }}</td>
-                                    <td>
-                                        {% if loja.licenca_ativa %}
-                                        <span class="badge bg-success">ATIVA</span>
-                                        {% else %}
-                                        <span class="badge bg-danger">INATIVA</span>
-                                        {% endif %}
-                                        {% if loja.data_expiracao %}
-                                        <br><small>Expira: {{ loja.data_expiracao.strftime('%d/%m/%Y') }}</small>
-                                        {% endif %}
-                                    </td>
-                                    {% if is_super_admin %}
-                                    <td>
-                                        <form method="POST" action="{{ url_for('config_admin') }}" class="d-inline">
-                                            <input type="hidden" name="tipo_acao" value="toggle_loja">
-                                            <input type="hidden" name="loja_id" value="{{ loja.id }}">
-                                            <button type="submit" class="btn btn-sm btn-{{ 'danger' if loja.ativo else 'success' }}">
-                                                {% if loja.ativo %}
-                                                <i class="fas fa-lock me-1"></i>Bloquear
-                                                {% else %}
-                                                <i class="fas fa-unlock me-1"></i>Liberar
-                                                {% endif %}
-                                            </button>
-                                        </form>
-                                    </td>
-                                    {% endif %}
-                                </tr>
+            </form>
+            
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Tipo</th>
+                            <th>Loja</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in usuarios %}
+                        <tr>
+                            <td>{{ u.id }}</td>
+                            <td>{{ u.username }}</td>
+                            <td>
+                                {% if u.role == 'admin' %}
+                                <span class="badge bg-danger">Admin</span>
                                 {% else %}
-                                <tr>
-                                    <td colspan="{% if is_super_admin %}6{% else %}5{% endif %}" class="text-center text-muted">Nenhuma loja</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                                <span class="badge bg-secondary">User</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if u.loja %}
+                                {{ u.loja.nome }}
+                                {% else %}
+                                <span class="text-muted">Sem loja</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <!-- Resetar Senha -->
+                                    <button class="btn btn-warning" 
+                                            onclick="resetarSenha({{ u.id }}, '{{ u.username }}')"
+                                            title="Resetar Senha">
+                                        <i class="fas fa-key"></i>
+                                    </button>
+                                    
+                                    <!-- Alternar Admin/User -->
+                                    {% if u.id != session.usuario_id %}
+                                    <form method="POST" action="{{ url_for('config_admin') }}" class="d-inline">
+                                        <input type="hidden" name="tipo_acao" value="toggle_role">
+                                        <input type="hidden" name="user_id" value="{{ u.id }}">
+                                        <button type="submit" class="btn btn-info" title="Alternar Admin/User">
+                                            <i class="fas fa-user-shield"></i>
+                                        </button>
+                                    </form>
+                                    
+                                    <!-- Excluir -->
+                                    {% if is_super_admin %}
+                                    <a href="/excluir/usuario/{{ u.id }}" class="btn btn-danger" 
+                                       onclick="return confirm('Excluir usuário {{ u.username }}?')"
+                                       title="Excluir">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                    {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                Nenhum usuário encontrado
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
-        
-        <!-- TAB USUÁRIOS -->
-        <div class="tab-pane fade" id="usuarios" role="tabpanel">
-            <div class="card">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="fas fa-users me-2"></i>Gestão de Usuários</h5>
-                </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ url_for('config_admin') }}" class="mb-4">
-                        <input type="hidden" name="tipo_acao" value="add_user">
-                        <div class="row g-2">
-                            <div class="col-md-3">
-                                <input type="text" name="username" class="form-control" placeholder="Username" required>
-                            </div>
-                            <div class="col-md-3">
-                                <input type="password" name="password" class="form-control" placeholder="Senha" required>
-                            </div>
-                            <div class="col-md-3">
-                                <select name="loja_id" class="form-control">
-                                    <option value="">Selecionar Loja</option>
-                                    {% for loja in lojas if loja.ativo %}
-                                    <option value="{{ loja.id }}">{{ loja.nome }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <select name="role" class="form-control">
-                                    <option value="user">Usuário</option>
-                                    <option value="admin">Administrador</option>
-                                </select>
-                            </div>
-                            <div class="col-md-1">
-                                <button type="submit" class="btn btn-success w-100"><i class="fas fa-plus"></i></button>
-                            </div>
-                        </div>
-                    </form>
-                    
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Username</th>
-                                    <th>Role</th>
-                                    <th>Loja</th>
-                                    <th>Criado em</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for u in usuarios %}
-                                <tr>
-                                    <td>{{ u.id }}</td>
-                                    <td>{{ u.username }}</td>
-                                    <td>
-                                        {% if u.role == 'admin' %}
-                                        <span class="badge bg-danger">ADMIN</span>
-                                        {% else %}
-                                        <span class="badge bg-secondary">USER</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if u.loja %}
-                                        {{ u.loja.nome }}
-                                        {% else %}
-                                        <span class="text-muted">Sem loja</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ u.data_criacao.strftime('%d/%m/%Y') }}</td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <!-- Botão para resetar senha -->
-                                            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalResetSenha{{ u.id }}">
-                                                <i class="fas fa-key"></i>
-                                            </button>
-                                            
-                                            <!-- Botão para alternar role -->
-                                            {% if u.id != session.usuario_id %}
-                                            <form method="POST" action="{{ url_for('config_admin') }}" class="d-inline">
-                                                <input type="hidden" name="tipo_acao" value="toggle_role">
-                                                <input type="hidden" name="user_id" value="{{ u.id }}">
-                                                <button type="submit" class="btn btn-info" title="Alternar Admin/User">
-                                                    <i class="fas fa-user-shield"></i>
-                                                </button>
-                                            </form>
-                                            
-                                            <!-- Botão para excluir -->
-                                            {% if is_super_admin %}
-                                            <a href="/excluir/usuario/{{ u.id }}" class="btn btn-danger" onclick="return confirm('Excluir usuário {{ u.username }}?')">
-                                                <i class="fas fa-trash"></i>
-                                            </a>
-                                            {% endif %}
-                                            {% endif %}
-                                        </div>
-                                        
-                                        <!-- Modal para resetar senha -->
-                                        <div class="modal fade" id="modalResetSenha{{ u.id }}" tabindex="-1">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">Resetar Senha - {{ u.username }}</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                    </div>
-                                                    <form method="POST" action="{{ url_for('config_admin') }}">
-                                                        <div class="modal-body">
-                                                            <input type="hidden" name="tipo_acao" value="reset_password">
-                                                            <input type="hidden" name="user_id" value="{{ u.id }}">
-                                                            <div class="mb-3">
-                                                                <label class="form-label">Nova Senha:</label>
-                                                                <input type="password" name="nova_senha" class="form-control" required>
-                                                            </div>
-                                                            <div class="mb-3">
-                                                                <label class="form-label">Confirmar Senha:</label>
-                                                                <input type="password" name="confirmar_senha" class="form-control" required>
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                                            <button type="submit" class="btn btn-primary">Salvar</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- TAB MÁQUINAS (APENAS SUPER ADMIN) -->
-        {% if is_super_admin %}
-        <div class="tab-pane fade" id="maquinas" role="tabpanel">
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0"><i class="fas fa-laptop me-2"></i>Gestão de Máquinas</h5>
-                </div>
-                <div class="card-body">
-                    <a href="{{ url_for('nova_maquina') }}" class="btn btn-success mb-3">
-                        <i class="fas fa-plus me-1"></i>Nova Máquina
+    </div>
+    
+    <!-- BOTÕES ADICIONAIS -->
+    <div class="card">
+        <div class="card-body text-center">
+            <div class="row">
+                <div class="col-md-4 mb-2">
+                    <a href="/maquinas" class="btn btn-info w-100">
+                        <i class="fas fa-laptop"></i> Gerenciar Máquinas
                     </a>
-                    
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Loja</th>
-                                    <th>Fingerprint</th>
-                                    <th>Status</th>
-                                    <th>Expiração</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for m in maquinas %}
-                                <tr>
-                                    <td>{{ m.id }}</td>
-                                    <td>
-                                        {% if m.loja %}
-                                        {{ m.loja.nome }}
-                                        {% else %}
-                                        <span class="text-muted">Sem loja</span>
-                                        {% endif %}
-                                    </td>
-                                    <td><code>{{ m.fingerprint[:20] }}...</code></td>
-                                    <td>
-                                        {% if not m.ativa %}
-                                        <span class="badge bg-danger">Inativa</span>
-                                        {% elif m.expira_em and m.expira_em < agora %}
-                                        <span class="badge bg-warning text-dark">Expirada</span>
-                                        {% else %}
-                                        <span class="badge bg-success">Ativa</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if m.expira_em %}
-                                        {{ m.expira_em.strftime('%d/%m/%Y') }}
-                                        <br>
-                                        <small class="text-muted">{{ dias_restantes(m.expira_em) }} dias restantes</small>
-                                        {% else %}
-                                        <span class="text-muted">Nunca</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <a href="{{ url_for('editar_maquina', id=m.id) }}" class="btn btn-sm btn-primary">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="{{ url_for('toggle_maquina', id=m.id) }}" class="btn btn-sm btn-warning">
-                                            <i class="fas fa-power-off"></i>
-                                        </a>
-                                        <a href="{{ url_for('historico_maquina', id=m.id) }}" class="btn btn-sm btn-info">
-                                            <i class="fas fa-history"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% else %}
-                                <tr>
-                                    <td colspan="6" class="text-center text-muted">Nenhuma máquina cadastrada</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <a href="/admin/logs/completo" class="btn btn-secondary w-100">
+                        <i class="fas fa-clipboard-list"></i> Ver Logs
+                    </a>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <a href="/" class="btn btn-primary w-100">
+                        <i class="fas fa-home"></i> Voltar ao Início
+                    </a>
                 </div>
             </div>
         </div>
-        {% endif %}
     </div>
 </div>
 
-<!-- JavaScript para as abas -->
+<!-- Modal para Gerar Nova Chave -->
+<div class="modal fade" id="modalGerarChave">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">🔑 Gerar Nova Chave</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('config_admin') }}">
+                <input type="hidden" name="tipo_acao" value="gerar_nova_chave">
+                <input type="hidden" id="lojaIdChave" name="loja_id">
+                <div class="modal-body">
+                    <p>Gerar nova chave para: <strong id="nomeLojaChave"></strong></p>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> A chave atual será substituída!
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Gerar Nova Chave</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Resetar Senha -->
+<div class="modal fade" id="modalResetSenha">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">🔐 Resetar Senha</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('config_admin') }}">
+                <input type="hidden" name="tipo_acao" value="reset_password">
+                <input type="hidden" id="userIdReset" name="user_id">
+                <div class="modal-body">
+                    <p>Resetar senha para: <strong id="usernameReset"></strong></p>
+                    <div class="mb-3">
+                        <label>Nova Senha:</label>
+                        <input type="password" name="nova_senha" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Confirmar Senha:</label>
+                        <input type="password" name="confirmar_senha" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
+function gerarChave(lojaId, lojaNome) {
+    document.getElementById('lojaIdChave').value = lojaId;
+    document.getElementById('nomeLojaChave').textContent = lojaNome;
+    new bootstrap.Modal(document.getElementById('modalGerarChave')).show();
+}
+
+function resetarSenha(userId, username) {
+    document.getElementById('userIdReset').value = userId;
+    document.getElementById('usernameReset').textContent = username;
+    new bootstrap.Modal(document.getElementById('modalResetSenha')).show();
+}
+</script>
+
+<script>
+// Verificar limite antes de enviar formulário
+function verificarLimite() {
+    const totalLojas = {{ lojas|length }};
+    const limite = 10;
+    
+    if (totalLojas >= limite) {
+        alert('❌ LIMITE ATINGIDO!\n\nO sistema já possui o número máximo de 10 lojas.\nNão é possível criar novas lojas.');
+        return false;
+    }
+    
+    return true;
+}
+
+// Verificar ao carregar a página
 document.addEventListener('DOMContentLoaded', function() {
-    var hash = window.location.hash;
-    if (hash) {
-        var triggerTab = document.querySelector('#adminTabs button[data-bs-target="' + hash + '"]');
-        if (triggerTab) {
-            new bootstrap.Tab(triggerTab).show();
+    const totalLojas = {{ lojas|length }};
+    const limite = 10;
+    
+    // Atualizar badges
+    const badges = document.querySelectorAll('.badge-loja-count');
+    badges.forEach(badge => {
+        if (totalLojas >= limite) {
+            badge.classList.remove('bg-success', 'bg-warning');
+            badge.classList.add('bg-danger');
+        } else if (totalLojas >= limite - 2) {
+            badge.classList.remove('bg-success', 'bg-danger');
+            badge.classList.add('bg-warning');
+        }
+    });
+    
+    // Mostrar alerta se estiver perto do limite
+    if (totalLojas >= limite - 1) {
+        console.log(`⚠️ Sistema com ${totalLojas}/${limite} lojas`);
+        
+        // Adicionar contador no título
+        const titulo = document.querySelector('h1');
+        if (titulo) {
+            const contador = document.createElement('span');
+            contador.className = `badge ms-2 bg-${totalLojas >= limite ? 'danger' : 'warning'}`;
+            contador.textContent = `${totalLojas}/${limite}`;
+            titulo.appendChild(contador);
         }
     }
     
-    document.querySelectorAll('#adminTabs button').forEach(function(tab) {
-        tab.addEventListener('shown.bs.tab', function (event) {
-            window.location.hash = event.target.getAttribute('data-bs-target');
-        });
-    });
+    // Bloquear botão se atingiu limite
+    const btnCriarLoja = document.getElementById('btnCriarLoja');
+    const nomeLojaInput = document.getElementById('nomeLojaInput');
+    
+    if (totalLojas >= limite) {
+        if (btnCriarLoja) {
+            btnCriarLoja.disabled = true;
+            btnCriarLoja.innerHTML = '<i class="fas fa-ban"></i> LIMITE ATINGIDO';
+        }
+        if (nomeLojaInput) {
+            nomeLojaInput.disabled = true;
+            nomeLojaInput.placeholder = 'Sistema com limite máximo de lojas';
+        }
+    }
 });
 </script>
 {% endblock %}

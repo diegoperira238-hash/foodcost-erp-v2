@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>➕ Nova Máquina</h1>
+        <a href="/maquinas" class="btn btn-primary">← Voltar</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Fingerprint:</label>
+                    <input type="text" name="fingerprint" class="form-control" required
+                           placeholder="Cole o fingerprint da máquina">
+                    <small class="text-muted">
+                        Obtenha o fingerprint através do sistema de licenciamento
+                    </small>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Loja:</label>
+                    <select name="loja_id" class="form-control">
+                        <option value="">Selecionar Loja</option>
+                        {% for loja in lojas %}
+                        <option value="{{ loja.id }}">{{ loja.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Observações:</label>
+                    <textarea name="observacoes" class="form-control" rows="3"
+                              placeholder="Ex: Computador da cozinha, Notebook do gerente, etc."></textarea>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    A máquina será cadastrada como ATIVA por padrão.
+                </div>
+                
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> Salvar Máquina
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

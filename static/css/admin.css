@@ -1,0 +1,207 @@
+/* ADMIN STYLES */
+.admin-dashboard {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+.admin-card {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.admin-card:hover {
+    transform: translateY(-5px);
+}
+
+.admin-card-header {
+    border-radius: 15px 15px 0 0 !important;
+    padding: 20px;
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+.admin-stats-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.admin-stats-icon {
+    font-size: 2.5rem;
+    opacity: 0.8;
+    margin-bottom: 15px;
+}
+
+.admin-stats-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.admin-stats-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Badges modernos */
+.badge-admin {
+    background: linear-gradient(45deg, #FF416C, #FF4B2B);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.badge-user {
+    background: linear-gradient(45deg, #36D1DC, #5B86E5);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.badge-loja {
+    background: linear-gradient(45deg, #00b09b, #96c93d);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+/* Tabs modernas */
+.nav-tabs-admin {
+    border-bottom: 2px solid #dee2e6;
+}
+
+.nav-tabs-admin .nav-link {
+    border: none;
+    color: #6c757d;
+    font-weight: 500;
+    padding: 12px 25px;
+    margin-right: 5px;
+    border-radius: 10px 10px 0 0;
+}
+
+.nav-tabs-admin .nav-link.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.nav-tabs-admin .nav-link i {
+    margin-right: 8px;
+}
+
+/* Botões modernos */
+.btn-admin-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 10px 25px;
+    border-radius: 10px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-admin-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    color: white;
+}
+
+.btn-admin-success {
+    background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
+    border: none;
+    color: white;
+    padding: 10px 25px;
+    border-radius: 10px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-admin-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 176, 155, 0.3);
+    color: white;
+}
+
+/* Tabelas modernas */
+.table-admin {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.table-admin thead {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    color: #2c3e50;
+}
+
+.table-admin th {
+    border: none;
+    padding: 15px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+}
+
+.table-admin td {
+    padding: 15px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.table-admin tbody tr:hover {
+    background-color: rgba(102, 126, 234, 0.05);
+}
+
+/* Formulários modernos */
+.form-control-admin {
+    border: 2px solid #eef2f7;
+    border-radius: 10px;
+    padding: 12px 15px;
+    transition: all 0.3s ease;
+}
+
+.form-control-admin:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Modal moderno */
+.modal-admin {
+    background: rgba(0,0,0,0.5);
+}
+
+.modal-content-admin {
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .admin-stats-card {
+        margin-bottom: 20px;
+    }
+    
+    .nav-tabs-admin .nav-link {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .table-admin {
+        font-size: 0.9rem;
+    }
+}

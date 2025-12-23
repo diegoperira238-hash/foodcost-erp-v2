@@ -1,0 +1,481 @@
+{% extends 'base.html' %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Cabeçalho -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1"><i class="fas fa-store text-primary me-2"></i>{{ loja.nome }}</h1>
+            <p class="text-muted mb-0">ID: {{ loja.id }} | Criada em: {{ loja.criado_em.strftime('%d/%m/%Y') }}</p>
+        </div>
+        <div class="btn-group">
+            <a href="/config/admin" class="btn btn-admin-primary">
+                <i class="fas fa-arrow-left me-2"></i> Voltar
+            </a>
+            {% if is_super_admin %}
+            <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalEditarLoja">
+                <i class="fas fa-edit me-2"></i> Editar
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Cartões de Informações -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="admin-stats-card">
+                <div class="admin-stats-icon text-primary">
+                    <i class="fas fa-key"></i>
+                </div>
+                <div class="admin-stats-number">
+                    {% if loja.licenca_ativa %}
+                    <span class="text-success">ATIVA</span>
+                    {% else %}
+                    <span class="text-danger">INATIVA</span>
+                    {% endif %}
+                </div>
+                <div class="admin-stats-label">LICENÇA</div>
+                <small class="text-muted">
+                    {% if loja.data_expiracao %}
+                    Expira: {{ loja.data_expiracao.strftime('%d/%m/%Y') }}
+                    {% else %}
+                    Sem expiração
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="admin-stats-card">
+                <div class="admin-stats-icon text-success">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="admin-stats-number">{{ usuarios|length }}</div>
+                <div class="admin-stats-label">USUÁRIOS</div>
+                <small class="text-muted">
+                    {{ usuarios|selectattr('role', 'equalto', 'admin')|list|length }} administradores
+                </small>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="admin-stats-card">
+                <div class="admin-stats-icon text-info">
+                    <i class="fas fa-laptop"></i>
+                </div>
+                <div class="admin-stats-number">{{ maquinas|length }}/{{ loja.max_maquinas }}</div>
+                <div class="admin-stats-label">MÁQUINAS</div>
+                <small class="text-muted">
+                    {{ maquinas|selectattr('ativa')|list|length }} ativas
+                </small>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="admin-stats-card">
+                <div class="admin-stats-icon text-warning">
+                    <i class="fas fa-history"></i>
+                </div>
+                <div class="admin-stats-number">{{ logs|length }}</div>
+                <div class="admin-stats-label">LOGS</div>
+                <small class="text-muted">últimos 50 registros</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chave da Licença -->
+    <div class="card admin-card mb-4">
+        <div class="card-header admin-card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="fas fa-key me-2"></i>Chave de Licença</h5>
+        </div>
+        <div class="card-body">
+            {% if loja.chave_licenca %}
+            <div class="input-group">
+                <input type="text" class="form-control form-control-admin" 
+                       value="{{ loja.chave_licenca }}" readonly id="chaveLicenca">
+                <button class="btn btn-admin-success" type="button" onclick="copiarChave()">
+                    <i class="fas fa-copy me-2"></i>Copiar
+                </button>
+            </div>
+            <small class="text-muted mt-2 d-block">
+                Esta chave deve ser usada para ativar licenças em novas máquinas.
+            </small>
+            {% else %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Esta loja não possui chave de licença.
+                {% if is_super_admin %}
+                <a href="#" class="alert-link" data-bs-toggle="modal" data-bs-target="#modalGerarChave">
+                    Gerar chave agora
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Abas -->
+    <ul class="nav nav-tabs nav-tabs-admin mb-4" id="lojaTabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" id="maquinas-tab" data-bs-toggle="tab" data-bs-target="#maquinas" type="button">
+                <i class="fas fa-laptop me-1"></i> Máquinas ({{ maquinas|length }})
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="usuarios-tab" data-bs-toggle="tab" data-bs-target="#usuarios" type="button">
+                <i class="fas fa-users me-1"></i> Usuários ({{ usuarios|length }})
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="logs-tab" data-bs-toggle="tab" data-bs-target="#logs" type="button">
+                <i class="fas fa-history me-1"></i> Logs ({{ logs|length }})
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="historico-tab" data-bs-toggle="tab" data-bs-target="#historico" type="button">
+                <i class="fas fa-list-alt me-1"></i> Histórico
+            </button>
+        </li>
+    </ul>
+    
+    <!-- Conteúdo das Abas -->
+    <div class="tab-content" id="lojaTabsContent">
+        <!-- TAB MÁQUINAS -->
+        <div class="tab-pane fade show active" id="maquinas" role="tabpanel">
+            <div class="card admin-card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-admin">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Fingerprint</th>
+                                    <th>Status</th>
+                                    <th>Criada em</th>
+                                    <th>Expiração</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for m in maquinas %}
+                                <tr>
+                                    <td>{{ m.id }}</td>
+                                    <td>
+                                        <code>{{ m.fingerprint[:25] }}...</code>
+                                        <button class="btn btn-sm btn-link p-0" 
+                                                onclick="navigator.clipboard.writeText('{{ m.fingerprint }}'); alert('Copiado!')">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        {% if m.ativa %}
+                                        <span class="badge bg-success">ATIVA</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">INATIVA</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ m.criada_em.strftime('%d/%m/%Y') }}</td>
+                                    <td>
+                                        {% if m.expira_em %}
+                                        {{ m.expira_em.strftime('%d/%m/%Y') }}
+                                        <br>
+                                        <small>{{ dias_restantes(m.expira_em) }}</small>
+                                        {% else %}
+                                        <span class="text-muted">Nunca</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('toggle_maquina', id=m.id) }}" 
+                                               class="btn btn-{{ 'danger' if m.ativa else 'success' }}">
+                                                {% if m.ativa %}
+                                                <i class="fas fa-power-off"></i>
+                                                {% else %}
+                                                <i class="fas fa-play"></i>
+                                                {% endif %}
+                                            </a>
+                                            <a href="{{ url_for('historico_maquina', id=m.id) }}" class="btn btn-info">
+                                                <i class="fas fa-history"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="fas fa-laptop fa-2x mb-3"></i><br>
+                                        Nenhuma máquina registrada
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB USUÁRIOS -->
+        <div class="tab-pane fade" id="usuarios" role="tabpanel">
+            <div class="card admin-card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-admin">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Role</th>
+                                    <th>Criado em</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for u in usuarios %}
+                                <tr>
+                                    <td>{{ u.id }}</td>
+                                    <td>{{ u.username }}</td>
+                                    <td>
+                                        {% if u.role == 'admin' %}
+                                        <span class="badge-admin">ADMIN</span>
+                                        {% else %}
+                                        <span class="badge-user">USER</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if u.data_criacao %}
+                                        {{ u.data_criacao.strftime('%d/%m/%Y') }}
+                                        {% else %}
+                                        <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-warning" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#modalResetSenha{{ u.id }}">
+                                                <i class="fas fa-key"></i>
+                                            </button>
+                                            {% if u.id != session.usuario_id %}
+                                            <a href="/excluir/usuario/{{ u.id }}" class="btn btn-danger"
+                                               onclick="return confirm('Excluir {{ u.username }}?')">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB LOGS -->
+        <div class="tab-pane fade" id="logs" role="tabpanel">
+            <div class="card admin-card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-admin">
+                            <thead>
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Usuário</th>
+                                    <th>IP</th>
+                                    <th>Fingerprint</th>
+                                    <th>Motivo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in logs %}
+                                <tr>
+                                    <td>{{ log.data.strftime('%d/%m/%Y %H:%M') }}</td>
+                                    <td>
+                                        {% if log.usuario %}
+                                        {{ log.usuario.username }}
+                                        {% else %}
+                                        <span class="text-muted">Sistema</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><small>{{ log.ip }}</small></td>
+                                    <td><small>{{ log.fingerprint[:15] }}...</small></td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if 'AUTORIZADO' in log.motivo else 'danger' if 'NAO_AUTORIZADO' in log.motivo else 'info' }}">
+                                            {{ log.motivo[:30] }}{% if log.motivo|length > 30 %}...{% endif %}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB HISTÓRICO -->
+        <div class="tab-pane fade" id="historico" role="tabpanel">
+            <div class="card admin-card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-admin">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Ação</th>
+                                    <th>Usuário</th>
+                                    <th>IP</th>
+                                    <th>Detalhes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in historico %}
+                                <tr>
+                                    <td>{{ item.data.strftime('%d/%m/%Y %H:%M') }}</td>
+                                    <td>
+                                        {% if item.acao == 'GERADA' %}
+                                        <span class="badge bg-success">GERADA</span>
+                                        {% elif item.acao == 'ATIVADA' %}
+                                        <span class="badge bg-primary">ATIVADA</span>
+                                        {% elif item.acao == 'BLOQUEADA' %}
+                                        <span class="badge bg-danger">BLOQUEADA</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ item.acao }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if item.usuario %}
+                                        {{ item.usuario.username }}
+                                        {% else %}
+                                        <span class="text-muted">Sistema</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><small>{{ item.ip }}</small></td>
+                                    <td><small>{{ item.detalhes }}</small></td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">
+                                        Nenhum histórico encontrado
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Loja -->
+{% if is_super_admin %}
+<div class="modal fade" id="modalEditarLoja" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content modal-content-admin">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Loja - {{ loja.nome }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('config_admin') }}">
+                <input type="hidden" name="tipo_acao" value="editar_loja">
+                <input type="hidden" name="loja_id" value="{{ loja.id }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nome da Loja:</label>
+                        <input type="text" name="nome_loja" class="form-control form-control-admin" 
+                               value="{{ loja.nome }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Máximo de máquinas:</label>
+                        <input type="number" name="max_maquinas" class="form-control form-control-admin" 
+                               value="{{ loja.max_maquinas }}" min="1" max="10" required>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="ativo" 
+                                   id="ativo" {% if loja.ativo %}checked{% endif %}>
+                            <label class="form-check-label" for="ativo">
+                                Loja ativa
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="licenca_ativa" 
+                                   id="licenca_ativa" {% if loja.licenca_ativa %}checked{% endif %}>
+                            <label class="form-check-label" for="licenca_ativa">
+                                Licença ativa
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-admin-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Gerar Chave -->
+<div class="modal fade" id="modalGerarChave" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content modal-content-admin">
+            <div class="modal-header">
+                <h5 class="modal-title">Gerar Chave para {{ loja.nome }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('config_admin') }}">
+                <div class="modal-body">
+                    <input type="hidden" name="tipo_acao" value="gerar_nova_chave">
+                    <input type="hidden" name="loja_id" value="{{ loja.id }}">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Esta ação substituirá a chave atual.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-admin-primary">Gerar Nova Chave</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Scripts -->
+<script>
+function copiarChave() {
+    var chaveInput = document.getElementById('chaveLicenca');
+    chaveInput.select();
+    chaveInput.setSelectionRange(0, 99999); // Para mobile
+    document.execCommand('copy');
+    alert('Chave copiada para a área de transferência!');
+}
+
+// Ativar tabs
+document.addEventListener('DOMContentLoaded', function() {
+    var hash = window.location.hash;
+    if (hash) {
+        var triggerTab = document.querySelector('#lojaTabs button[data-bs-target="' + hash + '"]');
+        if (triggerTab) {
+            new bootstrap.Tab(triggerTab).show();
+        }
+    }
+    
+    document.querySelectorAll('#lojaTabs button').forEach(function(tab) {
+        tab.addEventListener('shown.bs.tab', function (event) {
+            window.location.hash = event.target.getAttribute('data-bs-target');
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>⚙️ Configurações Básicas</h1>
+        <a href="/" class="btn btn-primary">← Voltar</a>
+    </div>
+    
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        <strong>Área de configuração básica</strong> - 
+        Você é um administrador normal. Para configurações avançadas, 
+        entre em contato com o super administrador.
+    </div>
+    
+    <!-- Informações do usuário -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">👤 Suas Informações</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Usuário:</strong> {{ usuario.username }}</p>
+                    <p><strong>Tipo:</strong> 
+                        {% if usuario.username == 'bpereira' %}
+                            <span class="badge bg-danger">SUPER ADMIN</span>
+                        {% elif usuario.role == 'admin' %}
+                            <span class="badge bg-warning">ADMINISTRADOR</span>
+                        {% else %}
+                            <span class="badge bg-secondary">USUÁRIO</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Loja:</strong> 
+                        {% if usuario.loja %}
+                            {{ usuario.loja.nome }}
+                        {% else %}
+                            <span class="text-muted">Não vinculada</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>Data cadastro:</strong> {{ usuario.data_criacao.strftime('%d/%m/%Y') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Categorias -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">📂 Categorias</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('config_basico') }}" class="mb-3">
+                <input type="hidden" name="tipo_acao" value="add_cat">
+                <div class="input-group">
+                    <input type="text" name="nome_cat" class="form-control" placeholder="Nova Categoria (Ex: CARNES)" required>
+                    <button class="btn btn-success" type="submit">
+                        <i class="fas fa-plus"></i> Adicionar
+                    </button>
+                </div>
+            </form>
+            
+            {% if categorias %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cat in categorias %}
+                        <tr>
+                            <td>{{ cat.nome }}</td>
+                            <td>
+                                <a href="/excluir/categoria/{{ cat.id }}" class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Excluir categoria {{ cat.nome }}?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center text-muted py-3">
+                <p>Nenhuma categoria cadastrada</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Unidades de Medida -->
+    <div class="card">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">📏 Unidades de Medida</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('config_basico') }}" class="mb-3">
+                <input type="hidden" name="tipo_acao" value="add_uni">
+                <div class="input-group">
+                    <input type="text" name="sigla_uni" class="form-control" placeholder="Nova Unidade (Ex: KG)" required>
+                    <button class="btn btn-info" type="submit">
+                        <i class="fas fa-plus"></i> Adicionar
+                    </button>
+                </div>
+            </form>
+            
+            {% if unidades %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Sigla</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for uni in unidades %}
+                        <tr>
+                            <td>{{ uni.sigla }}</td>
+                            <td>
+                                <a href="/excluir/unidade/{{ uni.id }}" class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Excluir unidade {{ uni.sigla }}?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center text-muted py-3">
+                <p>Nenhuma unidade cadastrada</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
