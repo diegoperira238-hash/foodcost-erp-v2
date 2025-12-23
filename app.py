@@ -2078,10 +2078,6 @@ def initialize_database():
         validar_limite_sistema()
         first_request_flag = True
 
-# Health check para Render
-@app.route('/health')
-def health_check():
-    return jsonify({'status': 'ok', 'timestamp': datetime.now().isoformat()}), 200
 
 # Página de erro 404
 @app.errorhandler(404)
