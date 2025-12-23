@@ -2065,6 +2065,10 @@ validar_limite_sistema()
 # CONFIGURAÇÃO PARA PRODUÇÃO (RENDER) - ATUALIZADO PARA FLASK 2.3+
 # ==============================================================================
 
+# ==============================================================================
+# CONFIGURAÇÃO PARA PRODUÇÃO (RENDER) - ATUALIZADO PARA FLASK 2.3+
+# ==============================================================================
+
 # Substituir before_first_request (depreciado no Flask 2.3+)
 first_request_flag = False
 
@@ -2077,22 +2081,6 @@ def initialize_database():
         setup_database()
         validar_limite_sistema()
         first_request_flag = True
-
-
-# Página de erro 404
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template('404.html'), 404
-
-# Página de erro 500  
-@app.errorhandler(500)
-def internal_server_error(e):
-    return render_template('500.html'), 500
-
-if __name__ == '__main__':
-    # Modo produção
-    port = int(os.environ.get('PORT', 10000))
-    app.run(host='0.0.0.0', port=port)
 
 # Health check para Render
 @app.route('/health')
@@ -2113,14 +2101,3 @@ if __name__ == '__main__':
     # Modo produção
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
-
-
-
-if __name__ == '__main__':
-    # Modo produção
-    if os.getenv('RENDER') or not app.debug:
-        port = int(os.getenv('PORT', 10000))
-        app.run(host='0.0.0.0', port=port)
-    else:
-        # Modo desenvolvimento local
-        app.run(debug=True, host='0.0.0.0', port=10000)
