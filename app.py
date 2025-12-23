@@ -2060,11 +2060,43 @@ validar_limite_sistema()
 # ==============================================================================
 
 # Criar banco de dados se não existir
-@app.before_first_request
-def create_tables():
-    db.create_all()
-    setup_database()
-    validar_limite_sistema()
+# Flag para controlar primeira execução
+# ==============================================================================
+# CONFIGURAÇÃO PARA PRODUÇÃO (RENDER) - ATUALIZADO PARA FLASK 2.3+
+# ==============================================================================
+
+# Substituir before_first_request (depreciado no Flask 2.3+)
+first_request_flag = False
+
+@app.before_request
+def initialize_database():
+    global first_request_flag
+    if not first_request_flag:
+        # Criar banco de dados se não existir
+        db.create_all()
+        setup_database()
+        validar_limite_sistema()
+        first_request_flag = True
+
+# Health check para Render
+@app.route('/health')
+def health_check():
+    return jsonify({'status': 'ok', 'timestamp': datetime.now().isoformat()}), 200
+
+# Página de erro 404
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+# Página de erro 500  
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('500.html'), 500
+
+if __name__ == '__main__':
+    # Modo produção
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
 
 # Health check para Render
 @app.route('/health')
