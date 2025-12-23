@@ -1841,6 +1841,51 @@ def setup_database():
         """
         enviar_alerta_email("🚀 Sistema FoodCost Iniciado", mensagem)
 
+# ==============================================================================
+# VERIFICAÇÃO E CRIAÇÃO DO BANCO DE DADOS
+# ==============================================================================
+def init_database():
+    """Inicializa o banco de dados e cria tabelas se necessário"""
+    with app.app_context():
+        try:
+            # Verificar se o banco está acessível
+            db.session.execute(text("SELECT 1"))
+            print("✅ Conexão com PostgreSQL estabelecida")
+            
+            # Verificar se tabelas existem
+            inspector = db.inspect(db.engine)
+            existing_tables = inspector.get_table_names()
+            
+            if existing_tables:
+                print(f"✅ Banco já contém {len(existing_tables)} tabelas")
+            else:
+                print("⚠️  Nenhuma tabela encontrada. Criando todas as tabelas...")
+                db.create_all()
+                print("✅ Todas as tabelas criadas com sucesso!")
+                
+                # Criar usuário admin padrão
+                from models import User  # Ajuste conforme sua estrutura
+                
+                admin = User(
+                    username="bpereira",
+                    password_hash="chef@26",  # Você deve usar hash na prática
+                    full_name="Administrador",
+                    role="admin",
+                    store_id=1
+                )
+                db.session.add(admin)
+                db.session.commit()
+                print("✅ Usuário admin criado: bpereira / chef@26")
+                
+        except Exception as e:
+            print(f"❌ Erro ao inicializar banco: {e}")
+            import traceback
+            traceback.print_exc()
+
+# Executar na inicialização
+init_database()
+
+
 if __name__ == '__main__':
     setup_database()
     
