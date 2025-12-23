@@ -683,25 +683,20 @@ def index():
 # Adicione APÓS init_database() e ANTES de if __name__ == '__main__':
 def create_admin_user():
     with app.app_context():
-        from models import User  # ou de onde vem seu User
-        
-        # Verificar se usuário existe
-        if User.query.filter_by(username="bpereira").first() is None:
-            admin = User(
-                username="bpereira",
-                password_hash="chef@26",  # ⚠️ Use bcrypt ou hashing na produção!
-                full_name="Administrador",
-                role="admin",
-                store_id=1
-            )
-            db.session.add(admin)
-            db.session.commit()
-            print("✅ Usuário admin criado manualmente: bpereira / chef@26")
-        else:
-            print("✅ Usuário admin já existe")
-
-# Execute uma vez
-create_admin_user()
+        # Em vez de 'from models import User', use:
+        # Se User está definido neste mesmo arquivo:
+        if 'User' in globals():
+            if User.query.filter_by(username="bpereira").first() is None:
+                admin = User(
+                    username="bpereira",
+                    password_hash="chef@26",
+                    full_name="Administrador",
+                    role="admin",
+                    store_id=1
+                )
+                db.session.add(admin)
+                db.session.commit()
+                print("✅ Usuário admin criado manualmente: bpereira / chef@26")
 # ==============================================================================
 # ROTAS PARA SUPER ADMIN (APENAS bpereira)
 # ==============================================================================
