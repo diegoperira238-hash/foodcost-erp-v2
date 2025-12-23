@@ -47,6 +47,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # ==============================================================================
 # CONFIGURAÇÃO DO BANCO DE DADOS PRINCIPAL
 # ==============================================================================
+# CONFIGURAÇÃO DO BANCO DE DADOS PRINCIPAL
 database_url = os.getenv("DATABASE_URL")
 
 if database_url:
