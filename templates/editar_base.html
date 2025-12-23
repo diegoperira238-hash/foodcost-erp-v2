@@ -1,0 +1,75 @@
+﻿{% extends 'base.html' %}
+{% block content %}
+<div class="card p-4 shadow-sm border-0 bg-white">
+    <h4 class="fw-bold mb-4 text-primary">{{ 'Editar Base: ' + base.nome if base else 'Nova Base de Produção' }}</h4>
+    <form method="POST">
+        <div class="row g-3">
+            <div class="col-md-8">
+                <label class="form-label fw-bold">Nome da Base</label>
+                <input type="text" name="nome" class="form-control shadow-none" value="{{ base.nome if base else '' }}" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Rendimento Total (KG/L)</label>
+                <input type="number" step="0.001" name="rendimento" class="form-control shadow-none" value="{{ base.rendimento if base else '1.000' }}" required>
+            </div>
+        </div>
+
+        <hr class="my-4">
+        <h5 class="fw-bold mb-3"><i class="fas fa-list me-2"></i>Ingredientes da Base</h5>
+        <div id="insumos-container">
+            {% if base and base.itens %}
+                {% for item in base.itens %}
+                <div class="row g-2 mb-2 item-linha">
+                    <div class="col-md-7">
+                        <select name="insumo_id[]" class="form-select shadow-none">
+                            {% for i in insumos %}
+                            <option value="{{i.id}}" {{ 'selected' if i.id == item.insumo_id }}>{{i.nome}} ({{i.unidade}})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="number" step="0.0001" name="quantidade[]" class="form-control shadow-none" value="{{ item.quantidade }}">
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-outline-danger w-100" onclick="this.parentElement.parentElement.remove()"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="row g-2 mb-2 item-linha">
+                    <div class="col-md-7">
+                        <select name="insumo_id[]" class="form-select shadow-none">
+                            <option value="">Selecione um Insumo...</option>
+                            {% for i in insumos %}<option value="{{i.id}}">{{i.nome}} ({{i.unidade}})</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="number" step="0.0001" name="quantidade[]" class="form-control shadow-none" placeholder="Quantidade">
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-outline-danger w-100" onclick="this.parentElement.parentElement.remove()"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <button type="button" onclick="addInsumo()" class="btn btn-sm btn-outline-secondary mt-2">+ Adicionar Ingrediente</button>
+
+        <div class="mt-5 border-top pt-4">
+            <button type="submit" class="btn btn-success px-5 fw-bold">Salvar Alterações</button>
+            <a href="/bases" class="btn btn-light border px-4">Voltar</a>
+        </div>
+    </form>
+</div>
+
+<script>
+function addInsumo() {
+    const container = document.getElementById('insumos-container');
+    const firstLine = container.querySelector('.item-linha');
+    const newLine = firstLine.cloneNode(true);
+    newLine.querySelectorAll('input').forEach(i => i.value = '');
+    newLine.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+    container.appendChild(newLine);
+}
+</script>
+{% endblock %}

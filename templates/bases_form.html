@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+    <h2 class="fw-bold mb-4">
+        {% if base %} <i class="fas fa-edit me-2"></i>Editar Base: {{ base.nome }} 
+        {% else %} <i class="fas fa-plus me-2"></i>Nova Base de Produção {% endif %}
+    </h2>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <form method="POST" action="{% if base %}/bases/editar/{{ base.id }}{% else %}/bases/nova{% endif %}">
+                
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <label class="form-label fw-bold">Nome da Base</label>
+                        <input type="text" name="nome" class="form-control" value="{{ base.nome if base else '' }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Rendimento Final (KG ou L)</label>
+                        <input type="number" step="0.001" name="rendimento" class="form-control" value="{{ base.rendimento_final if base else '1.0' }}" required>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold mb-3">Ingredientes da Base</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle" id="tabela-ingredientes">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Insumo</th>
+                                <th style="width: 200px;">Quantidade</th>
+                                <th class="text-center" style="width: 50px;">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if base and base.itens %}
+                                {% for item in base.itens %}
+                                <tr>
+                                    <td>
+                                        <select name="insumo_id[]" class="form-select">
+                                            {% for insumo in insumos %}
+                                            <option value="{{ insumo.id }}" {% if insumo.id == item.insumo_id %}selected{% endif %}>
+                                                {{ insumo.nome }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="number" step="0.0001" name="quantidade[]" class="form-control" value="{{ item.quantidade }}">
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td>
+                                        <select name="insumo_id[]" class="form-select">
+                                            <option value="">Selecione um insumo...</option>
+                                            {% for insumo in insumos %}
+                                            <option value="{{ insumo.id }}">{{ insumo.nome }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="number" step="0.0001" name="quantidade[]" class="form-control" placeholder="0.000">
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" class="btn btn-outline-primary" onclick="adicionarLinha()">
+                        <i class="fas fa-plus me-2"></i>Adicionar Ingrediente
+                    </button>
+                    <div>
+                        <a href="/bases" class="btn btn-light me-2">Cancelar</a>
+                        <button type="submit" class="btn btn-success px-4 fw-bold">SALVAR ALTERAÇÕES</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function adicionarLinha() {
+    const tbody = document.querySelector('#tabela-ingredientes tbody');
+    const row = `
+        <tr>
+            <td>
+                <select name="insumo_id[]" class="form-select">
+                    <option value="">Selecione um insumo...</option>
+                    {% for insumo in insumos %}<option value="{{ insumo.id }}">{{ insumo.nome }}</option>{% endfor %}
+                </select>
+            </td>
+            <td><input type="number" step="0.0001" name="quantidade[]" class="form-control" placeholder="0.000"></td>
+            <td class="text-center"><button type="button" class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
+        </tr>`;
+    tbody.insertAdjacentHTML('beforeend', row);
+}
+</script>
+{% endblock %}

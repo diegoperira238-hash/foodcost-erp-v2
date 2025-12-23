@@ -1,0 +1,52 @@
+<!-- templates/config_restrita.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações do Sistema</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Configurações Restritas</h1>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <ul class="flash-messages">
+              {% for message in messages %}
+                <li>{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('config_restrita') }}" method="POST">
+            <fieldset>
+                <legend>Dados da Loja</legend>
+                <label for="nome_loja">Nome da Loja:</label>
+                <input type="text" id="nome_loja" name="nome_loja" value="{{ loja.nome }}" required>
+
+                <label for="endereco">Endereço:</label>
+                <input type="text" id="endereco" name="endereco" value="{{ loja.endereco }}" required>
+
+                <label for="contato">Contato:</label>
+                <input type="text" id="contato" name="contato" value="{{ loja.contato }}" required>
+
+                <label for="cnpj">CNPJ:</label>
+                <input type="text" id="cnpj" name="cnpj" value="{{ loja.cnpj }}" required>
+            </fieldset>
+
+            <fieldset>
+                <legend>Licença do Sistema</legend>
+                <label for="tipo_licenca">Tipo de Licença:</label>
+                <input type="text" id="tipo_licenca" name="tipo_licenca" value="{{ licenca.tipo }}" required>
+
+                <label for="validade">Validade:</label>
+                <input type="date" id="validade" name="validade" value="{{ licenca.validade|strftime('%Y-%m-%d') }}" required>
+            </fieldset>
+
+            <button type="submit">Salvar Configurações</button>
+        </form>
+    </div>
+</body>
+</html>

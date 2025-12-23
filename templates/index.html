@@ -1,0 +1,192 @@
+﻿{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- DASHBOARD DE ESTATÍSTICAS -->
+    <div class="row mb-4">
+        {% if info_licenca and not is_super_admin %}
+        <div class="col-md-12 mb-3">
+            <div class="alert alert-info">
+                <h5><i class="fas fa-store me-2"></i>{{ info_licenca.nome_loja }}</h5>
+                <p class="mb-0">
+                    Licença: <strong>{{ info_licenca.status }}</strong> | 
+                    Expira: {{ info_licenca.expira_em }} | 
+                    Dias restantes: <strong>{{ info_licenca.dias_restantes }}</strong>
+                </p>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if is_super_admin %}
+        <div class="col-md-12 mb-3">
+            <div class="alert alert-dark">
+                <h5><i class="fas fa-crown me-2"></i>Modo Administrador Mestre</h5>
+                <p class="mb-0">
+                    <a href="{{ url_for('admin_master') }}" class="btn btn-dark">
+                        <i class="fas fa-shield-alt me-1"></i>Acessar Painel Master
+                    </a>
+                    <span class="ms-3">Controle total de licenças, máquinas e usuários</span>
+                </p>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Cartões de Estatísticas -->
+        <div class="col-md-3 col-sm-6">
+            <div class="card bg-primary text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Fichas Técnicas</h6>
+                            <h3>{{ stats.total_fichas }}</h3>
+                            <small>{{ stats.fichas_lucrativas }} lucrativas</small>
+                        </div>
+                        <i class="fas fa-book fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-sm-6">
+            <div class="card bg-success text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Insumos</h6>
+                            <h3>{{ stats.total_insumos }}</h3>
+                            <small>Cadastrados</small>
+                        </div>
+                        <i class="fas fa-box fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-sm-6">
+            <div class="card bg-info text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Bases</h6>
+                            <h3>{{ stats.total_bases }}</h3>
+                            <small>Preparadas</small>
+                        </div>
+                        <i class="fas fa-utensils fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-sm-6">
+            <div class="card bg-warning text-dark shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">CMV Alto</h6>
+                            <h3>{{ stats.fichas_com_cmv_alto }}</h3>
+                            <small>{{ stats.media_cmv|round(1) }}% do total</small>
+                        </div>
+                        <i class="fas fa-chart-line fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TÍTULO E BOTÃO NOVA FICHA -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark">Gestão de Fichas Técnicas</h2>
+        <a href="/fichas/nova" class="btn btn-primary shadow-sm"><i class="fas fa-plus me-2"></i>Nova Ficha</a>
+    </div>
+
+    <!-- TABELA DE FICHAS -->
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Produto / Porções</th>
+                        <th>Custo Unit.</th>
+                        <th>Preço Sugerido</th>
+                        <th>Venda Praticada</th>
+                        <th>CMV Real</th>
+                        <th>Margem</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in dados %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold">{{ d.ficha.nome }}</div>
+                            <small class="text-muted">{{ d.ficha.porcoes }} porções</small>
+                        </td>
+                        <td class="text-danger fw-bold">{{ d.metricas.custo_porcao|moeda }}</td>
+                        <td class="text-info fw-bold">
+                            {{ d.metricas.preco_sugerido|moeda }} 
+                            <small class="d-block text-muted" style="font-size: 10px;">Meta: {{ d.ficha.cmv_alvo }}%</small>
+                        </td>
+                        <td class="fw-bold text-dark">{{ d.ficha.preco_venda|moeda }}</td>
+                        <td>
+                            <span class="badge {{ 'bg-success' if d.metricas.cmv_real <= d.ficha.cmv_alvo else 'bg-danger' }}">
+                                {{ d.metricas.cmv_real | percentual }}
+                            </span>
+                        </td>
+                        <td class="fw-bold {{ 'text-success' if d.metricas.lucro_bruto > 0 else 'text-danger' }}">
+                            {{ d.metricas.lucro_bruto|moeda }} 
+                            <small>({{ d.metricas.margem_contribuicao | percentual }})</small>
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group">
+                                <a href="/fichas/ver/{{d.ficha.id}}" class="btn btn-sm btn-outline-primary" title="Visualizar"><i class="fas fa-eye"></i></a>
+                                <a href="/fichas/editar/{{d.ficha.id}}" class="btn btn-sm btn-outline-warning" title="Editar"><i class="fas fa-edit"></i></a>
+                                <a href="/excluir/ficha/{{d.ficha.id}}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Excluir ficha?')"><i class="fas fa-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- RESUMO FINANCEIRO -->
+    {% if dados %}
+    <div class="card mt-4 border-0 shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Resumo Financeiro</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h6 class="text-muted">Custo Total Sistema</h6>
+                            <h4 class="text-danger">{{ stats.custo_total_sistema|moeda }}</h4>
+                            <small>Acumulado em todas as fichas</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h6 class="text-muted">Fichas Lucrativas</h6>
+                            <h4 class="text-success">{{ stats.fichas_lucrativas }}</h4>
+                            <small>{{ stats.percentual_lucrativas|round(1) }}% do total</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h6 class="text-muted">Alertas CMV</h6>
+                            <h4 class="text-warning">{{ stats.fichas_com_cmv_alto }}</h4>
+                            <small>Atenção: acima da meta</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

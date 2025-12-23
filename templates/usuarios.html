@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Gestão de Usuários</h2>
+    <div class="card p-4 mb-4">
+        <h5>Novo Usuário</h5>
+        <form method="POST">
+            <div class="row">
+                <div class="col-md-3">
+                    <input type="text" name="username" class="form-control" placeholder="Login" required>
+                </div>
+                <div class="col-md-3">
+                    <input type="password" name="password" class="form-control" placeholder="Senha" required>
+                </div>
+                <div class="col-md-2">
+                    <select name="role" class="form-control">
+                        <option value="user">Usuário Comum</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <input type="number" name="limite" class="form-control" placeholder="Limite Fichas" value="10">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-success w-100">Cadastrar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Usuário</th>
+                <th>Permissão</th>
+                <th>Limite Fichas</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in usuarios %}
+            <tr>
+                <td>{{ u.username }}</td>
+                <td><span class="badge bg-{{ 'danger' if u.role == 'admin' else 'primary' }}">{{ u.role }}</span></td>
+                <td>{{ u.limite_fichas }}</td>
+                <td>
+                    {% if u.username != 'admin' %}
+                    <a href="{{ url_for('excluir_usuario', id=u.id) }}" class="btn btn-sm btn-danger">Excluir</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: sans-serif; color: #333; }
+        .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 10px; }
+        .info-table { width: 100%; margin: 20px 0; border-collapse: collapse; }
+        .info-table td { padding: 8px; border: 1px solid #ddd; }
+        .itens-table { width: 100%; border-collapse: collapse; }
+        .itens-table th { background: #f2f2f2; padding: 10px; text-align: left; border: 1px solid #ddd; }
+        .itens-table td { padding: 8px; border: 1px solid #ddd; }
+        .total-box { margin-top: 20px; text-align: right; font-size: 1.2rem; font-weight: bold; color: #2563eb; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>FICHA TÉCNICA DE PREPARO</h1>
+        <h2>{{ f.nome }}</h2>
+    </div>
+    
+    <table class="info-table">
+        <tr>
+            <td><strong>Rendimento:</strong> {{ f.porcoes }} porções</td>
+            <td><strong>Preço de Venda:</strong> {{ f.preco_venda|moeda }}</td>
+        </tr>
+    </table>
+
+    <h3>Ingredientes e Composição</h3>
+    <table class="itens-table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Quantidade</th>
+                <th>Custo Unit.</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for it in itens %}
+            <tr>
+                <td>{{ it.nome }}</td>
+                <td>{{ it.qtd }}</td>
+                <td>{{ it.custo_u|moeda }}</td>
+                <td>{{ it.total|moeda }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="total-box">
+        Custo Total da Receita: {{ c_total|moeda }}
+    </div>
+</body>
+</html>

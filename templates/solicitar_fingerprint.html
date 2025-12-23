@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Segurança do Sistema</h4>
+                </div>
+                <div class="card-body">
+                    <p>Este sistema requer identificação por fingerprint. Habilite os cookies e recarregue a página.</p>
+                    <button onclick="location.reload()" class="btn btn-primary">Recarregar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

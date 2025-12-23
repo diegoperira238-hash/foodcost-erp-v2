@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-laptop me-2"></i>
+                        {% if maquina %}Editar Máquina{% else %}Nova Máquina{% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% if maquina %}{{ url_for('editar_maquina', id=maquina.id) }}{% else %}{{ url_for('nova_maquina') }}{% endif %}">
+                        
+                        {% if is_super_admin %}
+                        <div class="mb-3">
+                            <label class="form-label">Loja:</label>
+                            <select name="loja_id" class="form-control" required>
+                                <option value="">Selecione uma loja</option>
+                                {% for loja in lojas %}
+                                <option value="{{ loja.id }}" 
+                                    {% if maquina and maquina.loja_id == loja.id %}selected{% endif %}>
+                                    {{ loja.nome }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Fingerprint:</label>
+                            <input type="text" name="fingerprint" class="form-control" 
+                                   value="{{ maquina.fingerprint if maquina else '' }}" required
+                                   placeholder="Cole o fingerprint da máquina">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Obtenha o fingerprint na página de ativação
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Dias de Validade:</label>
+                            <input type="number" name="dias_validade" class="form-control" 
+                                   value="{{ ((maquina.expira_em - agora).days if maquina and maquina.expira_em else 365) }}" 
+                                   min="1" max="3650" required>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>
+                                Número de dias até expirar (máx: 3650 = 10 anos)
+                            </small>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{{ url_for('listar_maquinas') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>
+                                {% if maquina %}Atualizar{% else %}Cadastrar{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                    
+                    {% if not maquina %}
+                    <hr>
+                    <div class="alert alert-info mt-3">
+                        <h6><i class="fas fa-question-circle me-2"></i>Como obter o fingerprint?</h6>
+                        <ol class="mb-0">
+                            <li>Peça ao cliente para acessar o sistema</li>
+                            <li>Ele será redirecionado para a página de ativação</li>
+                            <li>O fingerprint será gerado automaticamente</li>
+                            <li>Copie e cole aqui</li>
+                        </ol>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

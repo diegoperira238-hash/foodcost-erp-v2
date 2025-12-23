@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="row">
+
+        <!-- CATEGORIAS -->
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-tags me-2"></i> Categorias
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <input type="hidden" name="tipo_acao" value="add_cat">
+                        <div class="input-group mb-3">
+                            <input type="text" name="nome_cat" class="form-control" placeholder="Nova Categoria (Ex: CARNES)" required>
+                            <button class="btn btn-primary" type="submit"><i class="fas fa-plus"></i> Adicionar</button>
+                        </div>
+                    </form>
+
+                    <ul class="list-group">
+                        {% for c in categorias %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ c.nome }}
+                            <a href="/excluir/categoria/{{ c.id }}" class="text-danger" onclick="return confirm('Excluir categoria?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </li>
+                        {% endfor %}
+                        {% if categorias|length == 0 %}
+                        <li class="list-group-item text-muted">Nenhuma categoria cadastrada.</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- UNIDADES -->
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-info text-white">
+                    <i class="fas fa-balance-scale me-2"></i> Unidades de Medida
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <input type="hidden" name="tipo_acao" value="add_uni">
+                        <div class="input-group mb-3">
+                            <input type="text" name="sigla_uni" class="form-control" placeholder="Nova Unidade (Ex: KG)" required>
+                            <button class="btn btn-info text-white" type="submit"><i class="fas fa-plus"></i> Adicionar</button>
+                        </div>
+                    </form>
+
+                    <ul class="list-group">
+                        {% for u in unidades %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ u.sigla }}
+                            <a href="/excluir/unidade/{{ u.id }}" class="text-danger" onclick="return confirm('Excluir unidade?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </li>
+                        {% endfor %}
+                        {% if unidades|length == 0 %}
+                        <li class="list-group-item text-muted">Nenhuma unidade cadastrada.</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

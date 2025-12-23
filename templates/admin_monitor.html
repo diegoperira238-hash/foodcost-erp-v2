@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <h1 class="mb-4"><i class="fas fa-radar me-2"></i>Painel de Monitoramento</h1>
+    
+    <!-- Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6>Total de Logs</h6>
+                    <h3>{{ stats.total_logs }}</h3>
+                    <small>{{ stats.logs_24h }} últimas 24h</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h6>Acessos Não Autorizados</h6>
+                    <h3>{{ stats.logs_nao_autorizados }}</h3>
+                    <small>Tentativas bloqueadas</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h6>IPs Monitorados</h6>
+                    <h3>{{ stats.ips_monitorados }}</h3>
+                    <small>{{ stats.ips_suspeitos }} suspeitos</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6>Monitoramento Ativo</h6>
+                    <h3><i class="fas fa-shield-alt"></i></h3>
+                    <small>Tempo real</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- IPs Suspeitos -->
+    <div class="card mb-4">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>IPs Suspeitos</h5>
+        </div>
+        <div class="card-body">
+            {% if ips_suspeitos %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>IP</th>
+                            <th>Nível de Risco</th>
+                            <th>Tentativas</th>
+                            <th>Autorizados</th>
+                            <th>Não Autorizados</th>
+                            <th>Lojas Acessadas</th>
+                            <th>Último Acesso</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ip, info in ips_suspeitos %}
+                        <tr class="{{ 'table-danger' if info.nivel_risco == 'ALTO' else 'table-warning' }}">
+                            <td><code>{{ ip }}</code></td>
+                            <td>
+                                <span class="badge bg-{{ 'danger' if info.nivel_risco == 'ALTO' else 'warning' }}">
+                                    {{ info.nivel_risco }}
+                                </span>
+                            </td>
+                            <td>{{ info.total }}</td>
+                            <td>{{ info.autorizados }}</td>
+                            <td>{{ info.nao_autorizados }}</td>
+                            <td>
+                                {% for loja in info.lojas %}
+                                <span class="badge bg-info">{{ loja }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>{{ info.ultimo_acesso.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="bloquearIP('{{ ip }}')">
+                                    <i class="fas fa-ban"></i> Bloquear
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted text-center">Nenhum IP suspeito detectado.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Últimos 100 Logs -->
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="fas fa-history me-2"></i>Últimos 100 Logs de Acesso</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>IP</th>
+                            <th>Loja</th>
+                            <th>Usuário</th>
+                            <th>Fingerprint</th>
+                            <th>Status</th>
+                            <th>Motivo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr class="{{ 'table-success' if 'AUTORIZADO' in log.motivo else 'table-danger' }}">
+                            <td>{{ log.data.strftime('%d/%m %H:%M:%S') }}</td>
+                            <td><code>{{ log.ip }}</code></td>
+                            <td>{{ log.loja.nome if log.loja else '-' }}</td>
+                            <td>{{ log.usuario.username if log.usuario else '-' }}</td>
+                            <td><small>{{ log.fingerprint[:15] }}...</small></td>
+                            <td>
+                                {% if 'AUTORIZADO' in log.motivo %}
+                                <span class="badge bg-success">OK</span>
+                                {% else %}
+                                <span class="badge bg-danger">BLOQUEADO</span>
+                                {% endif %}
+                            </td>
+                            <td><small>{{ log.motivo }}</small></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function bloquearIP(ip) {
+    if (confirm(`Bloquear permanentemente o IP ${ip}?`)) {
+        fetch(`/admin/bloquear_ip/${ip}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ip: ip})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('IP bloqueado com sucesso!');
+                location.reload();
+            } else {
+                alert('Erro ao bloquear IP: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Erro: ' + error);
+        });
+    }
+}
+
+// Atualizar a cada 30 segundos
+setTimeout(() => {
+    location.reload();
+}, 30000);
+</script>
+{% endblock %}

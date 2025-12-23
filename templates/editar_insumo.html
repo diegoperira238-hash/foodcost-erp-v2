@@ -1,0 +1,15 @@
+﻿{% extends 'base.html' %}
+{% block content %}
+<div class="card p-4">
+    <h3>Editar Insumo: {{i.nome}}</h3>
+    <form method="POST" class="row g-3">
+        <div class="col-md-4"><label>Nome</label><input name="n" class="form-control" value="{{i.nome}}"></div>
+        <div class="col-md-4"><label>Categoria</label><select name="cat" class="form-select">{% for c in cats %}<option {% if c.nome == i.categoria %}selected{% endif %}>{{c.nome}}</option>{% endfor %}</select></div>
+        <div class="col-md-4"><label>Unidade</label><select name="u" class="form-select">{% for u in unis %}<option {% if u.sigla == i.unidade %}selected{% endif %}>{{u.sigla}}</option>{% endfor %}</select></div>
+        <div class="col-md-4"><label>Preço Emb.</label><input name="p" class="form-control" value="{{i.preco_emb}}"></div>
+        <div class="col-md-4"><label>Qtd Emb.</label><input name="t" class="form-control" value="{{i.tam_emb}}"></div>
+        <div class="col-md-4"><label>FC</label><input name="fc" class="form-control" value="{{i.fc}}"></div>
+        <div class="col-12 mt-4"><button class="btn btn-success">Salvar Alterações</button> <a href="/insumos" class="btn btn-secondary">Cancelar</a></div>
+    </form>
+</div>
+{% endblock %}

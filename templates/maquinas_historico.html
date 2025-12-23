@@ -1,0 +1,28 @@
+{% extends "templet.config.html" %}
+{% block content %}
+<h2>Histórico da Máquina</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Data</th>
+            <th>Usuário</th>
+            <th>Loja</th>
+            <th>Fingerprint</th>
+            <th>IP</th>
+            <th>Motivo</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for log in logs %}
+        <tr>
+            <td>{{ log.data.strftime('%d/%m/%Y %H:%M') }}</td>
+            <td>{{ log.usuario.username }}</td>
+            <td>{{ log.loja.nome }}</td>
+            <td>{{ log.fingerprint }}</td>
+            <td>{{ log.ip }}</td>
+            <td>{{ log.motivo }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

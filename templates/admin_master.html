@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <h1 class="mb-4"><i class="fas fa-crown me-2"></i>Painel Master</h1>
+    
+    <!-- Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6>Lojas</h6>
+                    <h3>{{ stats.total_lojas }}</h3>
+                    <small>{{ stats.lojas_ativas }} ativas</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6>Licenças Ativas</h6>
+                    <h3>{{ stats.licencas_ativas }}</h3>
+                    <small>{{ stats.licencas_expiradas }} expiradas</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6>Máquinas</h6>
+                    <h3>{{ stats.total_maquinas }}</h3>
+                    <small>{{ stats.maquinas_ativas }} ativas</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h6>Usuários</h6>
+                    <h3>{{ stats.total_usuarios }}</h3>
+                    <small>{{ stats.usuarios_admin }} administradores</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Licenças -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="fas fa-key me-2"></i>Controle de Licenças</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Loja</th>
+                        <th>Status</th>
+                        <th>Expiração</th>
+                        <th>Máquinas</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for info in licencas_info %}
+                    <tr>
+                        <td><strong>{{ info.loja.nome }}</strong></td>
+                        <td>{{ info.status|safe }}</td>
+                        <td>
+                            {% if info.loja.data_expiracao %}
+                                {{ info.loja.data_expiracao.strftime('%d/%m/%Y') }}
+                                <br><small>{{ info.dias_restantes }}</small>
+                            {% else %}
+                                Nunca
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ info.maquinas_ativas }}/{{ info.total_maquinas }}</span>
+                            <br><small>{{ info.usuarios }} usuários</small>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <!-- Gerar/Regenerar Licença -->
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalLicenca{{ info.loja.id }}">
+                                    <i class="fas fa-key"></i>
+                                </button>
+                                
+                                <!-- Ativar/Desativar -->
+                                <a href="{{ url_for('admin_toggle_licenca', loja_id=info.loja.id) }}" 
+                                   class="btn btn-{{ 'danger' if info.loja.licenca_ativa else 'success' }}">
+                                    <i class="fas fa-power-off"></i>
+                                </a>
+                                
+                                <!-- Extender -->
+                                <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalExtender{{ info.loja.id }}">
+                                    <i class="fas fa-calendar-plus"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Modal Gerar Licença -->
+                            <div class="modal fade" id="modalLicenca{{ info.loja.id }}">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form method="POST" action="{{ url_for('admin_gerar_licenca') }}">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Gerar Licença - {{ info.loja.nome }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <input type="hidden" name="loja_id" value="{{ info.loja.id }}">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Dias de Validade:</label>
+                                                    <input type="number" name="dias_validade" class="form-control" value="365" min="1">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Máximo de Máquinas:</label>
+                                                    <input type="number" name="max_maquinas" class="form-control" value="1" min="1">
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="submit" class="btn btn-primary">Gerar</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Modal Extender -->
+                            <div class="modal fade" id="modalExtender{{ info.loja.id }}">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form method="POST" action="{{ url_for('admin_extender_licenca', loja_id=info.loja.id) }}">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Extender Licença - {{ info.loja.nome }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Dias para adicionar:</label>
+                                                    <input type="number" name="dias" class="form-control" value="30" min="1">
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="submit" class="btn btn-warning">Extender</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Logs Recentes -->
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0"><i class="fas fa-history me-2"></i>Logs de Acesso (Últimos 100)</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Loja</th>
+                            <th>Usuário</th>
+                            <th>IP</th>
+                            <th>Motivo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td>{{ log.data.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>{{ log.loja.nome if log.loja else '-' }}</td>
+                            <td>{{ log.usuario.username if log.usuario else '-' }}</td>
+                            <td><code>{{ log.ip }}</code></td>
+                            <td><span class="badge bg-{{ 'success' if 'AUTORIZADO' in log.motivo else 'danger' }}">{{ log.motivo }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

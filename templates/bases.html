@@ -1,0 +1,34 @@
+﻿{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Bases e Produções</h2>
+    <a href="/bases/nova" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Nova Base</a>
+</div>
+<div class="card shadow-sm border-0">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="table-dark">
+            <tr>
+                <th>Nome</th>
+                <th>Rendimento</th>
+                <th>Custo KG/L</th>
+                <th class="text-end">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in lista %}
+            <tr>
+                <td class="fw-bold">{{ b.nome }}</td>
+                <td>{{ b.rendimento|peso }}</td>
+                <td class="text-danger fw-bold">{{ b.custo_por_kg_litro|moeda }}</td>
+                <td class="text-end">
+                    <div class="btn-group">
+                        <a href="/bases/editar/{{b.id}}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></a>
+                        <a href="/del/bas/{{b.id}}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Excluir?')"><i class="fas fa-trash"></i></a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

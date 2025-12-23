@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0"><i class="fas fa-laptop me-2"></i>Gestão de Máquinas</h1>
+        <a href="{{ url_for('nova_maquina') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>Nova Máquina
+        </a>
+    </div>
+    
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Filtrar por Loja:</label>
+                    <select class="form-control" id="filterLoja">
+                        <option value="">Todas as lojas</option>
+                        {% for loja in lojas|unique(attribute='nome') %}
+                        <option value="{{ loja.nome }}">{{ loja.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Filtrar por Status:</label>
+                    <select class="form-control" id="filterStatus">
+                        <option value="">Todos</option>
+                        <option value="ativa">Ativas</option>
+                        <option value="inativa">Inativas</option>
+                        <option value="expirada">Expiradas</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="button" class="btn btn-secondary w-100" onclick="resetFilters()">
+                        <i class="fas fa-redo me-1"></i>Limpar Filtros
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Tabela de Máquinas -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="maquinasTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Loja</th>
+                            <th>Fingerprint</th>
+                            <th>Status</th>
+                            <th>Criada em</th>
+                            <th>Expira em</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for maquina in maquinas %}
+                        <tr class="maquina-row" 
+                            data-loja="{{ maquina.loja.nome if maquina.loja else '' }}"
+                            data-status="{% if not maquina.ativa %}inativa{% elif maquina.expira_em and maquina.expira_em < agora %}expirada{% else %}ativa{% endif %}">
+                            <td>{{ maquina.id }}</td>
+                            <td>
+                                {% if maquina.loja %}
+                                <strong>{{ maquina.loja.nome }}</strong>
+                                {% else %}
+                                <span class="text-muted">Sem loja</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <code title="{{ maquina.fingerprint }}">{{ maquina.fingerprint[:20] }}...</code>
+                                <button class="btn btn-sm btn-outline-secondary ms-1" onclick="copyToClipboard('{{ maquina.fingerprint }}')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </td>
+                            <td>
+                                {% if not maquina.ativa %}
+                                <span class="badge bg-danger">INATIVA</span>
+                                {% elif maquina.expira_em and maquina.expira_em < agora %}
+                                <span class="badge bg-warning text-dark">EXPIRADA</span>
+                                {% else %}
+                                <span class="badge bg-success">ATIVA</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ maquina.criada_em.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                {% if maquina.expira_em %}
+                                {{ maquina.expira_em.strftime('%d/%m/%Y') }}
+                                <br>
+                                <small class="text-muted">{{ dias_restantes(maquina.expira_em) }} dias</small>
+                                {% else %}
+                                <span class="text-muted">Nunca</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('editar_maquina', id=maquina.id) }}" class="btn btn-outline-primary" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ url_for('toggle_maquina', id=maquina.id) }}" class="btn btn-outline-warning" title="{% if maquina.ativa %}Desativar{% else %}Ativar{% endif %}">
+                                        <i class="fas fa-power-off"></i>
+                                    </a>
+                                    <a href="{{ url_for('historico_maquina', id=maquina.id) }}" class="btn btn-outline-info" title="Histórico">
+                                        <i class="fas fa-history"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="fas fa-laptop fa-3x mb-3"></i>
+                                <h5>Nenhuma máquina cadastrada</h5>
+                                <p>Clique em "Nova Máquina" para começar</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Estatísticas -->
+    {% if maquinas %}
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h6>Total de Máquinas</h6>
+                    <h3>{{ maquinas|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h6>Máquinas Ativas</h6>
+                    <h3>{{ maquinas|selectattr('ativa')|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h6>Máquinas Expiradas</h6>
+                    <h3>{{ maquinas|selectattr('expira_em')|selectattr('expira_em', 'lt', agora)|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h6>Máquinas Inativas</h6>
+                    <h3>{{ maquinas|rejectattr('ativa')|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        alert('Fingerprint copiado para a área de transferência!');
+    }, function(err) {
+        console.error('Erro ao copiar: ', err);
+    });
+}
+
+// Filtros
+document.getElementById('filterLoja').addEventListener('change', filterTable);
+document.getElementById('filterStatus').addEventListener('change', filterTable);
+
+function filterTable() {
+    const lojaFilter = document.getElementById('filterLoja').value.toLowerCase();
+    const statusFilter = document.getElementById('filterStatus').value;
+    
+    document.querySelectorAll('.maquina-row').forEach(row => {
+        const loja = row.getAttribute('data-loja').toLowerCase();
+        const status = row.getAttribute('data-status');
+        
+        const showLoja = !lojaFilter || loja.includes(lojaFilter);
+        const showStatus = !statusFilter || status === statusFilter;
+        
+        row.style.display = (showLoja && showStatus) ? '' : 'none';
+    });
+}
+
+function resetFilters() {
+    document.getElementById('filterLoja').value = '';
+    document.getElementById('filterStatus').value = '';
+    filterTable();
+}
+
+// Inicializar filtros
+filterTable();
+</script>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-0"><i class="fas fa-history me-2"></i>Histórico da Máquina</h1>
+            <p class="text-muted mb-0">
+                <strong>Fingerprint:</strong> <code>{{ maquina.fingerprint }}</code>
+                {% if maquina.loja %}
+                | <strong>Loja:</strong> {{ maquina.loja.nome }}
+                {% endif %}
+            </p>
+        </div>
+        <a href="{{ url_for('listar_maquinas') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Voltar
+        </a>
+    </div>
+    
+    <!-- Informações da Máquina -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <strong>ID:</strong> {{ maquina.id }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Status:</strong>
+                        {% if not maquina.ativa %}
+                        <span class="badge bg-danger">INATIVA</span>
+                        {% elif maquina.expira_em and maquina.expira_em < agora %}
+                        <span class="badge bg-warning text-dark">EXPIRADA</span>
+                        {% else %}
+                        <span class="badge bg-success">ATIVA</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <strong>Criada em:</strong> {{ maquina.criada_em.strftime('%d/%m/%Y %H:%M') }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Expira em:</strong> 
+                        {% if maquina.expira_em %}
+                        {{ maquina.expira_em.strftime('%d/%m/%Y') }}
+                        ({{ dias_restantes(maquina.expira_em) }} dias)
+                        {% else %}
+                        <span class="text-muted">Nunca</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('editar_maquina', id=maquina.id) }}" class="btn btn-primary">
+                            <i class="fas fa-edit me-1"></i>Editar Máquina
+                        </a>
+                        <a href="{{ url_for('toggle_maquina', id=maquina.id) }}" class="btn btn-warning">
+                            <i class="fas fa-power-off me-1"></i>
+                            {% if maquina.ativa %}Desativar{% else %}Ativar{% endif %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Histórico de Acessos -->
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Últimos Acessos</h5>
+        </div>
+        <div class="card-body">
+            {% if logs %}
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>IP</th>
+                            <th>Loja</th>
+                            <th>Usuário</th>
+                            <th>Status</th>
+                            <th>Motivo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr class="{{ 'table-success' if 'AUTORIZADO' in log.motivo else 'table-danger' }}">
+                            <td>{{ log.data.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                            <td><code>{{ log.ip }}</code></td>
+                            <td>{{ log.loja.nome if log.loja else '-' }}</td>
+                            <td>{{ log.usuario.username if log.usuario else '-' }}</td>
+                            <td>
+                                {% if 'AUTORIZADO' in log.motivo %}
+                                <span class="badge bg-success">AUTORIZADO</span>
+                                {% else %}
+                                <span class="badge bg-danger">BLOQUEADO</span>
+                                {% endif %}
+                            </td>
+                            <td><small>{{ log.motivo }}</small></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-history fa-3x mb-3"></i>
+                <h5>Nenhum registro de acesso</h5>
+                <p>Esta máquina ainda não tentou acessar o sistema</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Estatísticas -->
+    {% if logs %}
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h6>Total de Acessos</h6>
+                    <h3>{{ logs|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h6>Acessos Autorizados</h6>
+                    <h3>{{ logs|selectattr('motivo', 'search', 'AUTORIZADO')|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h6>Acessos Bloqueados</h6>
+                    <h3>{{ logs|rejectattr('motivo', 'search', 'AUTORIZADO')|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,120 @@
+﻿{% extends 'base.html' %}
+{% block content %}
+<div class="card p-4 shadow-sm border-0 bg-white">
+    <h4 class="fw-bold mb-4 text-primary">{% if ficha %}Editar Ficha: {{ ficha.nome }}{% else %}Nova Ficha Técnica{% endif %}</h4>
+    
+    <form method="POST">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Nome do Produto</label>
+                <input type="text" name="nome" class="form-control shadow-none" value="{{ ficha.nome if ficha else '' }}" required>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-bold">Rendimento (Porções)</label>
+                <input type="number" step="0.01" name="porcoes" class="form-control shadow-none" value="{{ ficha.porcoes if ficha else '1' }}" required>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-bold">Preço de Venda (R$)</label>
+                <input type="number" step="0.01" name="preco_venda" class="form-control shadow-none" value="{{ ficha.preco_venda if ficha else '' }}" required>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-bold">Meta CMV (%)</label>
+                <input type="number" step="0.1" name="cmv_alvo" class="form-control shadow-none" value="{{ ficha.cmv_alvo if ficha else '30' }}">
+            </div>
+        </div>
+
+        <hr class="my-4">
+        
+        <h5 class="fw-bold mb-3"><i class="fas fa-carrot me-2 text-warning"></i>Ingredientes (Insumos)</h5>
+        <div id="insumos-container">
+            {% if ficha and ficha.itens %}
+                {% for item in ficha.itens if item.tipo_item == 'insumo' %}
+                <div class="row g-2 mb-2">
+                    <div class="col-md-8">
+                        <select name="insumo_id[]" class="form-select shadow-none">
+                            <option value="">Selecione um Insumo...</option>
+                            {% for i in insumos %}
+                            <option value="{{i.id}}" {% if item.referencia_id == i.id %}selected{% endif %}>{{i.nome}} ({{i.unidade.sigla}})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="number" step="0.001" name="insumo_qtd[]" class="form-control shadow-none" placeholder="Quantidade" value="{{ item.quantidade }}">
+                    </div>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="row g-2 mb-2">
+                <div class="col-md-8">
+                    <select name="insumo_id[]" class="form-select shadow-none">
+                        <option value="">Selecione um Insumo...</option>
+                        {% for i in insumos %}<option value="{{i.id}}">{{i.nome}} ({{i.unidade.sigla}})</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <input type="number" step="0.001" name="insumo_qtd[]" class="form-control shadow-none" placeholder="Quantidade">
+                </div>
+            </div>
+        </div>
+        <button type="button" onclick="addInsumo()" class="btn btn-sm btn-outline-secondary mb-4">+ Insumo</button>
+
+        <h5 class="fw-bold mb-3"><i class="fas fa-blender me-2 text-info"></i>Bases Prontas</h5>
+        <div id="bases-container">
+            {% if ficha and ficha.itens %}
+                {% for item in ficha.itens if item.tipo_item == 'base' %}
+                <div class="row g-2 mb-2">
+                    <div class="col-md-8">
+                        <select name="base_id[]" class="form-select shadow-none">
+                            <option value="">Selecione uma Base...</option>
+                            {% for b in bases %}
+                            <option value="{{b.id}}" {% if item.referencia_id == b.id %}selected{% endif %}>{{b.nome}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="number" step="0.001" name="base_qtd[]" class="form-control shadow-none" placeholder="Quantidade" value="{{ item.quantidade }}">
+                    </div>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="row g-2 mb-2">
+                <div class="col-md-8">
+                    <select name="base_id[]" class="form-select shadow-none">
+                        <option value="">Selecione uma Base...</option>
+                        {% for b in bases %}<option value="{{b.id}}">{{b.nome}}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <input type="number" step="0.001" name="base_qtd[]" class="form-control shadow-none" placeholder="Quantidade">
+                </div>
+            </div>
+        </div>
+        <button type="button" onclick="addBase()" class="btn btn-sm btn-outline-secondary mb-4">+ Base</button>
+
+        <div class="pt-3">
+            <button type="submit" class="btn btn-primary px-5 fw-bold">Salvar Ficha Técnica</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function addInsumo() {
+    const container = document.getElementById('insumos-container');
+    const rows = container.getElementsByClassName('row');
+    const div = rows[rows.length - 1].cloneNode(true);
+    div.querySelectorAll('input').forEach(i => i.value = '');
+    div.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+    container.appendChild(div);
+}
+function addBase() {
+    const container = document.getElementById('bases-container');
+    const rows = container.getElementsByClassName('row');
+    const div = rows[rows.length - 1].cloneNode(true);
+    div.querySelectorAll('input').forEach(i => i.value = '');
+    div.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+    container.appendChild(div);
+}
+</script>
+{% endblock %}

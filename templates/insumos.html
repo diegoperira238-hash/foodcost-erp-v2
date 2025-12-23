@@ -1,0 +1,90 @@
+﻿{% extends 'base.html' %}
+{% block content %}
+<div class="card p-4 mb-4">
+    <h4><i class="fas fa-plus-circle me-2"></i>Novo Insumo</h4>
+    <form method="POST" class="row g-3">
+        <div class="col-md-3">
+            <label>Nome</label>
+            <input name="nome" class="form-control" required>
+        </div>
+        
+        <div class="col-md-2">
+            <label>Categoria</label>
+            <select name="categoria_id" class="form-select" required>
+                <option value="" disabled selected>Selecione...</option>
+                {% for c in categorias %}
+                    <option value="{{ c.id }}">{{ c.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="col-md-2">
+            <label>Unid</label>
+            <select name="unidade_id" class="form-select" required>
+                <option value="" disabled selected>Selecione...</option>
+                {% for u in unidades %}
+                    <option value="{{ u.id }}">{{ u.sigla }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="col-md-2">
+            <label>Preço Emb.</label>
+            <input name="preco" class="form-control" placeholder="0,00" required>
+        </div>
+        
+        <div class="col-md-2">
+            <label>Qtd Emb.</label>
+            <input name="tamanho" class="form-control" placeholder="1,00" required>
+        </div>
+        
+        <div class="col-md-1">
+            <label>FC</label>
+            <input name="fc" class="form-control" value="1,00">
+        </div>
+        
+        <div class="col-12 mt-3">
+            <button class="btn btn-primary" type="submit">Cadastrar</button>
+        </div>
+    </form>
+</div>
+
+<div class="search-box mb-3">
+    <div class="input-group">
+        <span class="input-group-text"><i class="fas fa-search"></i></span>
+        <input type="text" id="searchInsumo" onkeyup="filterTable('searchInsumo', 'tableInsumo')" class="form-control" placeholder="Pesquisar insumo por nome ou categoria...">
+    </div>
+</div>
+
+<div class="card p-0 shadow-sm">
+    <table class="table table-hover align-middle mb-0" id="tableInsumo">
+        <thead class="table-light">
+            <tr>
+                <th>Insumo</th>
+                <th>Categoria</th>
+                <th>Unid</th>
+                <th>Custo Unit.</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in lista %}
+            <tr>
+                <td>{{ i.nome }}</td>
+                <td><span class="badge bg-secondary">{{ i.categoria.nome if i.categoria else 'Sem Categoria' }}</span></td>
+                <td>{{ i.unidade.sigla if i.unidade else '-' }}</td>
+                <td class="fw-bold">{{ i.custo_unitario | moeda }}</td>
+                <td>
+                    <a href="/insumos/editar/{{ i.id }}" class="btn btn-sm btn-warning">
+                        <i class="fas fa-edit"></i>
+                    </a> 
+                    <a href="/excluir/insumo/{{ i.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Excluir este insumo?')">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

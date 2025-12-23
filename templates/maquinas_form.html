@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar Máquina' if maquina else 'Nova Máquina' }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ 'Editar Máquina' if maquina else 'Nova Máquina' }}</h2>
+
+    <form method="POST" class="mt-3">
+        <div class="mb-3">
+            <label for="loja_id" class="form-label">Loja</label>
+            <select class="form-select" name="loja_id" required>
+                {% for l in lojas %}
+                    <option value="{{ l.id }}" {% if maquina and maquina.loja_id == l.id %}selected{% endif %}>
+                        {{ l.nome }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="fingerprint" class="form-label">Fingerprint</label>
+            <input type="text" class="form-control" name="fingerprint" value="{{ maquina.fingerprint if maquina else '' }}" required>
+            <div class="form-text">Identificador único da máquina.</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="dias_validos" class="form-label">Validade (dias)</label>
+            <input type="number" class="form-control" name="dias_validos" value="{{ (maquina.expira_em - datetime.utcnow()).days if maquina and maquina.expira_em else 30 }}" required>
+        </div>
+
+        {% if maquina %}
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" name="ativa" value="1" {% if maquina.ativa %}checked{% endif %}>
+            <label class="form-check-label">Ativa</label>
+        </div>
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary">{{ 'Atualizar' if maquina else 'Cadastrar' }}</button>
+        <a href="{{ url_for('listar_maquinas') }}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

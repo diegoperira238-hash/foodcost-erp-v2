@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-warning text-dark fw-bold">
+                    <i class="fas fa-edit me-2"></i>Editar Insumo: {{ i.nome }}
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        <div class="row g-3">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Nome do Insumo</label>
+                                <input type="text" name="nome" class="form-control" value="{{ i.nome }}" required>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Categoria</label>
+                                <select name="categoria_id" class="form-select" required>
+                                    {% for cat in categorias %}
+                                    <option value="{{ cat.id }}" {% if cat.id == i.categoria_id %}selected{% endif %}>
+                                        {{ cat.nome }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Unidade</label>
+                                <select name="unidade_id" class="form-select" required>
+                                    {% for uni in unidades %}
+                                    <option value="{{ uni.id }}" {% if uni.id == i.unidade_id %}selected{% endif %}>
+                                        {{ uni.sigla }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Preço Embalagem</label>
+                                <input type="text" name="preco" class="form-control" value="{{ i.preco_embalagem }}" required>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Tamanho Embalagem</label>
+                                <input type="text" name="tamanho" class="form-control" value="{{ i.tamanho_embalagem }}" required>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Fator Correção (FC)</label>
+                                <input type="text" name="fc" class="form-control" value="{{ i.fator_correcao }}" required>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="/insumos" class="btn btn-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-warning fw-bold">Salvar Alterações</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

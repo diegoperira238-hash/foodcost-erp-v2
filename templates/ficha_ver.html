@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card p-4 shadow-sm border-0 bg-white">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-dark"><i class="fas fa-file-invoice-dollar me-2 text-primary"></i>Ficha Técnica: {{ f.nome }}</h3>
+        <a href="/" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i> Voltar</a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="p-3 border rounded bg-light text-center">
+                <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 10px;">Custo da Receita</small>
+                <span class="fs-4 fw-bold text-danger">{{ m.custo_total|moeda }}</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 border rounded bg-light text-center">
+                <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 10px;">Custo por Porção ({{f.porcoes}})</small>
+                <span class="fs-4 fw-bold text-danger">{{ m.custo_porcao|moeda }}</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 border rounded bg-light text-center">
+                <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 10px;">Preço de Venda</small>
+                <span class="fs-4 fw-bold text-dark">{{ f.preco_venda|moeda }}</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 border rounded bg-light text-center">
+                <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 10px;">CMV Real</small>
+                <span class="fs-4 fw-bold text-success">{{ m.cmv_real | percentual }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive mt-4">
+        <table class="table table-bordered align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Ingrediente / Base</th>
+                    <th class="text-center">Quantidade</th>
+                    <th class="text-center">Custo Unitário</th>
+                    <th class="text-end">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for it in m.itens %}
+                <tr>
+                    <td class="fw-bold">{{ it.nome }}</td>
+                    <td class="text-center">{{ it.qtd|peso }} {{ it.un }}</td>
+                    <td class="text-center">{{ it.custo_un|moeda }}</td>
+                    <td class="text-end fw-bold">{{ it.subtotal|moeda }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="table-secondary">
+                    <td colspan="3" class="text-end fw-bold">TOTAL DA RECEITA:</td>
+                    <td class="text-end fw-bold text-danger">{{ m.custo_total|moeda }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    
+    <div class="mt-4 p-3 bg-light rounded border border-info">
+        <h5 class="fw-bold text-info"><i class="fas fa-lightbulb me-2"></i>Análise de Rentabilidade</h5>
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <p class="mb-1"><strong>Lucro por Porção:</strong> {{ m.lucro_bruto|moeda }}</p>
+                <p class="mb-0"><strong>Margem de Contribuição:</strong> {{ m.margem_contribuicao | percentual }}</p>
+            </div>
+            <div class="col-md-6">
+                <p class="mb-1"><strong>Preço Sugerido (Meta {{f.cmv_alvo}}%):</strong> {{ m.preco_sugerido|moeda }}</p>
+                <p class="mb-0"><strong>Status:</strong> 
+                    {% if m.cmv_real <= f.cmv_alvo %}
+                        <span class="badge bg-success">DENTRO DA META</span>
+                    {% else %}
+                        <span class="badge bg-danger">ACIMA DA META</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
