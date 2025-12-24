@@ -1,20 +1,20 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 
 {% block content %}
 <div class="container mt-4">
-    <!-- CABEÇALHO COM INFORMAÇÕES DO USUÁRIO -->
+    <!-- CABEÃ‡ALHO COM INFORMAÃ‡Ã•ES DO USUÃRIO -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="mb-1">🔧 Painel Administrativo</h1>
+            <h1 class="mb-1">ðŸ”§ Painel Administrativo</h1>
             <p class="text-muted mb-0">
-                Usuário: <strong>{{ session.usuario_nome }}</strong> | 
+                UsuÃ¡rio: <strong>{{ session.usuario_nome }}</strong> | 
                 Tipo: 
                 {% if session.usuario_nome == 'bpereira' %}
                     <span class="badge bg-danger">SUPER ADMIN</span>
                 {% elif session.role == 'admin' %}
                     <span class="badge bg-warning">ADMIN</span>
                 {% else %}
-                    <span class="badge bg-secondary">USUÁRIO</span>
+                    <span class="badge bg-secondary">USUÃRIO</span>
                 {% endif %}
             </p>
         </div>
@@ -26,12 +26,12 @@
             </a>
             {% endif %}
             <a href="/admin/historico-chaves" class="btn btn-primary">
-                <i class="fas fa-history"></i> Histórico
+                <i class="fas fa-history"></i> HistÃ³rico
             </a>
         </div>
     </div>
 
-    <!-- CARDS DE ESTATÍSTICAS -->
+    <!-- CARDS DE ESTATÃSTICAS -->
     <div class="row mb-4">
         <div class="col-md-3 mb-3">
             <div class="card">
@@ -49,7 +49,7 @@
             <div class="card">
                 <div class="card-body text-center">
                     <h2>{{ usuarios|length }}</h2>
-                    <p class="mb-0">Usuários</p>
+                    <p class="mb-0">UsuÃ¡rios</p>
                     <small>
                         {% set admins = usuarios|selectattr('role', 'equalto', 'admin')|list %}
                         {{ admins|length }} administradores
@@ -62,12 +62,12 @@
                 <div class="card-body text-center">
                     <h2>
                         {% if is_super_admin %}
-                            {{ lojas|sum(attribute='max_maquinas') or 0 }}
+                              <span class="text-success">3</span>
                         {% else %}
                             3
                         {% endif %}
                     </h2>
-                    <p class="mb-0">Máquinas (limite)</p>
+                    <p class="mb-0">MÃ¡quinas (limite)</p>
                     <small>Gerenciar no menu</small>
                 </div>
             </div>
@@ -76,10 +76,10 @@
             <div class="card">
                 <div class="card-body text-center">
                     <a href="/admin/historico-chaves" class="btn btn-primary w-100 mb-2">
-                        <i class="fas fa-history"></i> Histórico
+                        <i class="fas fa-history"></i> HistÃ³rico
                     </a>
                     <a href="/maquinas" class="btn btn-info w-100">
-                        <i class="fas fa-laptop"></i> Máquinas
+                        <i class="fas fa-laptop"></i> MÃ¡quinas
                     </a>
                 </div>
             </div>
@@ -90,7 +90,7 @@
     <!-- GERENCIAR LOJAS -->
 <div class="card mb-4">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">🏪 GERENCIAR LOJAS (LIMITE: 10)</h5>
+        <h5 class="mb-0">ðŸª GERENCIAR LOJAS (LIMITE: 10)</h5>
         <span class="badge bg-{{ 'danger' if lojas|length >= 10 else 'success' }}">
             {{ lojas|length }}/10
         </span>
@@ -115,7 +115,7 @@
                 {% if lojas|length >= 10 %}
                 <span class="text-danger">
                     <i class="fas fa-exclamation-triangle"></i>
-                    LIMITE ATINGIDO! Não é possível criar mais lojas.
+                    LIMITE ATINGIDO! NÃ£o Ã© possÃ­vel criar mais lojas.
                 </span>
                 {% else %}
                 Limite: {{ lojas|length }}/10 lojas | Vagas: {{ 10 - lojas|length }}
@@ -129,24 +129,24 @@
         <div class="alert alert-{{ 'danger' if lojas|length >= 10 else 'warning' }} mb-3">
             <i class="fas fa-{{ 'exclamation-triangle' if lojas|length >= 10 else 'info-circle' }}"></i>
             {% if lojas|length >= 10 %}
-            <strong>LIMITE MÁXIMO ATINGIDO!</strong> 
-            Sistema com {{ lojas|length }}/10 lojas. Não é possível criar mais.
+            <strong>LIMITE MÃXIMO ATINGIDO!</strong> 
+            Sistema com {{ lojas|length }}/10 lojas. NÃ£o Ã© possÃ­vel criar mais.
             {% elif lojas|length >= 9 %}
-            <strong>ATENÇÃO!</strong> 
-            Sistema com {{ lojas|length }}/10 lojas. Apenas {{ 10 - lojas|length }} vaga disponível.
+            <strong>ATENÃ‡ÃƒO!</strong> 
+            Sistema com {{ lojas|length }}/10 lojas. Apenas {{ 10 - lojas|length }} vaga disponÃ­vel.
             {% else %}
             <strong>AVISO:</strong> 
-            Sistema com {{ lojas|length }}/10 lojas. {{ 10 - lojas|length }} vagas disponíveis.
+            Sistema com {{ lojas|length }}/10 lojas. {{ 10 - lojas|length }} vagas disponÃ­veis.
             {% endif %}
         </div>
         {% endif %}
         
         <!-- ... resto da tabela de lojas continua igual ... -->
     
-    <!-- GERENCIAR USUÁRIOS -->
+    <!-- GERENCIAR USUÃRIOS -->
     <div class="card mb-4">
         <div class="card-header bg-success text-white">
-            <h5 class="mb-0">👥 GERENCIAR USUÁRIOS</h5>
+            <h5 class="mb-0">ðŸ‘¥ GERENCIAR USUÃRIOS</h5>
         </div>
         <div class="card-body">
             <form method="POST" action="{{ url_for('config_admin') }}" class="mb-3">
@@ -168,7 +168,7 @@
                     </div>
                     <div class="col-md-2">
                         <select name="role" class="form-control">
-                            <option value="user">Usuário</option>
+                            <option value="user">UsuÃ¡rio</option>
                             <option value="admin">Administrador</option>
                         </select>
                     </div>
@@ -188,7 +188,7 @@
                             <th>Username</th>
                             <th>Tipo</th>
                             <th>Loja</th>
-                            <th>Ações</th>
+                            <th>AÃ§Ãµes</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -232,7 +232,7 @@
                                     <!-- Excluir -->
                                     {% if is_super_admin %}
                                     <a href="/excluir/usuario/{{ u.id }}" class="btn btn-danger" 
-                                       onclick="return confirm('Excluir usuário {{ u.username }}?')"
+                                       onclick="return confirm('Excluir usuÃ¡rio {{ u.username }}?')"
                                        title="Excluir">
                                         <i class="fas fa-trash"></i>
                                     </a>
@@ -244,7 +244,7 @@
                         {% else %}
                         <tr>
                             <td colspan="5" class="text-center text-muted py-4">
-                                Nenhum usuário encontrado
+                                Nenhum usuÃ¡rio encontrado
                             </td>
                         </tr>
                         {% endfor %}
@@ -254,13 +254,13 @@
         </div>
     </div>
     
-    <!-- BOTÕES ADICIONAIS -->
+    <!-- BOTÃ•ES ADICIONAIS -->
     <div class="card">
         <div class="card-body text-center">
             <div class="row">
                 <div class="col-md-4 mb-2">
                     <a href="/maquinas" class="btn btn-info w-100">
-                        <i class="fas fa-laptop"></i> Gerenciar Máquinas
+                        <i class="fas fa-laptop"></i> Gerenciar MÃ¡quinas
                     </a>
                 </div>
                 <div class="col-md-4 mb-2">
@@ -270,7 +270,7 @@
                 </div>
                 <div class="col-md-4 mb-2">
                     <a href="/" class="btn btn-primary w-100">
-                        <i class="fas fa-home"></i> Voltar ao Início
+                        <i class="fas fa-home"></i> Voltar ao InÃ­cio
                     </a>
                 </div>
             </div>
@@ -283,7 +283,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">🔑 Gerar Nova Chave</h5>
+                <h5 class="modal-title">ðŸ”‘ Gerar Nova Chave</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="{{ url_for('config_admin') }}">
@@ -292,7 +292,7 @@
                 <div class="modal-body">
                     <p>Gerar nova chave para: <strong id="nomeLojaChave"></strong></p>
                     <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i> A chave atual será substituída!
+                        <i class="fas fa-exclamation-triangle"></i> A chave atual serÃ¡ substituÃ­da!
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -309,7 +309,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">🔐 Resetar Senha</h5>
+                <h5 class="modal-title">ðŸ” Resetar Senha</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="{{ url_for('config_admin') }}">
@@ -350,20 +350,20 @@ function resetarSenha(userId, username) {
 </script>
 
 <script>
-// Verificar limite antes de enviar formulário
+// Verificar limite antes de enviar formulÃ¡rio
 function verificarLimite() {
     const totalLojas = {{ lojas|length }};
     const limite = 10;
     
     if (totalLojas >= limite) {
-        alert('❌ LIMITE ATINGIDO!\n\nO sistema já possui o número máximo de 10 lojas.\nNão é possível criar novas lojas.');
+        alert('âŒ LIMITE ATINGIDO!\n\nO sistema jÃ¡ possui o nÃºmero mÃ¡ximo de 10 lojas.\nNÃ£o Ã© possÃ­vel criar novas lojas.');
         return false;
     }
     
     return true;
 }
 
-// Verificar ao carregar a página
+// Verificar ao carregar a pÃ¡gina
 document.addEventListener('DOMContentLoaded', function() {
     const totalLojas = {{ lojas|length }};
     const limite = 10;
@@ -382,9 +382,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Mostrar alerta se estiver perto do limite
     if (totalLojas >= limite - 1) {
-        console.log(`⚠️ Sistema com ${totalLojas}/${limite} lojas`);
+        console.log(`âš ï¸ Sistema com ${totalLojas}/${limite} lojas`);
         
-        // Adicionar contador no título
+        // Adicionar contador no tÃ­tulo
         const titulo = document.querySelector('h1');
         if (titulo) {
             const contador = document.createElement('span');
@@ -394,7 +394,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Bloquear botão se atingiu limite
+    // Bloquear botÃ£o se atingiu limite
     const btnCriarLoja = document.getElementById('btnCriarLoja');
     const nomeLojaInput = document.getElementById('nomeLojaInput');
     
@@ -405,7 +405,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if (nomeLojaInput) {
             nomeLojaInput.disabled = true;
-            nomeLojaInput.placeholder = 'Sistema com limite máximo de lojas';
+            nomeLojaInput.placeholder = 'Sistema com limite mÃ¡ximo de lojas';
         }
     }
 });
@@ -413,3 +413,4 @@ document.addEventListener('DOMContentLoaded', function() {
 {% endblock %}  
  
  
+
