@@ -115,7 +115,7 @@ class Maquina(db.Model):
     ativa = db.Column(db.Boolean, default=True)
     criada_em = db.Column(db.DateTime, default=datetime.now)
     expira_em = db.Column(db.DateTime, nullable=True)
-    observacoes = db.Column(db.Text)
+    # observacoes = db.Column(db.Text)  # Removida - não existe no banco PostgreSQL
     data_cadastro = db.Column(db.DateTime, default=datetime.now)
     loja = db.relationship('Loja')
 
@@ -2096,6 +2096,26 @@ def page_not_found(e):
 @app.errorhandler(500)
 def internal_server_error(e):
     return render_template('500.html'), 500
+
+# Adicione esta função ao app.py (antes do if __name__ == '__main__':)
+def check_and_fix_database():
+    """Verifica e corrige estrutura do banco"""
+    from sqlalchemy import inspect, text
+    
+    inspector = inspect(db.engine)
+    
+    # Verificar se a coluna observacoes existe na tabela maquinas
+    columns = [col['name'] for col in inspector.get_columns('maquinas')]
+    
+    if 'observacoes' not in columns:
+        print("⚠️  Coluna 'observacoes' não existe. Adicionando...")
+        try:
+            db.session.execute(text("ALTER TABLE maquinas ADD COLUMN observacoes TEXT"))
+            db.session.commit()
+            print("✅ Coluna 'observacoes' adicionada com sucesso!")
+        except Exception as e:
+            print(f"❌ Erro ao adicionar coluna: {e}")
+            db.session.rollback()
 
 if __name__ == '__main__':
     # Modo produção
