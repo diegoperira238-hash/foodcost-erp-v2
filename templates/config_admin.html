@@ -62,7 +62,7 @@
                 <div class="card-body text-center">
                     <h2>
                         {% if is_super_admin %}
-                            {{ lojas|sum(attribute='max_maquinas') }}
+                            {{ lojas|sum(attribute='max_maquinas') or 0 }}
                         {% else %}
                             3
                         {% endif %}
@@ -410,5 +410,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-{% endblock %}   
+{% endblock %}  
+ 
  
