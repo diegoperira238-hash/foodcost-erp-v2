@@ -399,6 +399,39 @@ def admin_config_required(f):
 # ==============================================================================
 # MIDDLEWARE: VERIFICAÃ‡ÃƒO DE LOJA ATIVA COM ALERTAS
 # ==============================================================================
+
+
+
+def fix_postgresql_encoding():
+    """Corrige encoding/collation do PostgreSQL para suportar português"""
+    from sqlalchemy import text
+    
+    print(" Corrigindo encoding para português brasileiro...")
+    
+    try:
+        # Comandos para corrigir encoding
+        commands = [
+            "SET client_encoding = 'UTF8'",
+            "SET CLIENT_ENCODING TO 'utf8'"
+        ]
+        
+        for cmd in commands:
+            try:
+                db.session.execute(text(cmd))
+            except:
+                pass
+        
+        # Verificar encoding atual
+        result = db.session.execute(text("SHOW client_encoding"))
+        encoding = result.scalar()
+        print(f" Encoding configurado: {encoding}")
+        
+        db.session.commit()
+        
+    except Exception as e:
+        print(f"  Erro ao configurar encoding: {e}")
+        db.session.rollback()
+
 @app.before_request
 def verificar_loja_ativa():
     rotas_livres = {
@@ -2121,5 +2154,6 @@ if __name__ == '__main__':
     # Modo produÃ§Ã£o
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
+
 
 
