@@ -115,8 +115,8 @@ class Maquina(db.Model):
     ativa = db.Column(db.Boolean, default=True)
     criada_em = db.Column(db.DateTime, default=datetime.now)
     expira_em = db.Column(db.DateTime, nullable=True)
-    # # observacoes = db.Column(db.Text)  # Removida - não existe no banco PostgreSQL  # Removida - não existe no banco PostgreSQL
-    data_cadastro = db.Column(db.DateTime, default=datetime.now)
+    # # # observacoes = db.Column(db.Text)  # Removida - PostgreSQL  # Removida - não existe no banco PostgreSQL  # Removida - não existe no banco PostgreSQL
+    # data_cadastro = db.Column(db.DateTime, default=datetime.now)  # Removida - PostgreSQL
     loja = db.relationship('Loja')
 
 class LogAcesso(db.Model):
@@ -2121,4 +2121,5 @@ if __name__ == '__main__':
     # Modo produÃ§Ã£o
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
+
 
