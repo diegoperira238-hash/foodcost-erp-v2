@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+﻿from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from functools import wraps
@@ -14,7 +14,7 @@ import smtplib
 from email.mime.text import MIMEText
 
 # ==============================================================================
-# CONFIGURAÇÃO DE LOGGING PROFISSIONAL
+# CONFIGURAÃ‡ÃƒO DE LOGGING PROFISSIONAL
 # ==============================================================================
 logging.basicConfig(
     level=logging.INFO,
@@ -24,7 +24,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ==============================================================================
-# CONFIGURAÇÃO DE AMBIENTE E FLASK
+# CONFIGURAÃ‡ÃƒO DE AMBIENTE E FLASK
 # ==============================================================================
 if getattr(sys, 'frozen', False):
     template_folder = os.path.join(sys._MEIPASS, 'templates')
@@ -35,7 +35,7 @@ else:
     base_path = os.path.abspath(os.path.dirname(__file__))
     app = Flask(__name__)
 
-# CONFIGURAÇÕES DE SEGURANÇA
+# CONFIGURAÃ‡Ã•ES DE SEGURANÃ‡A
 app.secret_key = "foodcost_chave_fixa_para_manter_sessao_123" 
 app.permanent_session_lifetime = timedelta(minutes=30)
 app.config['SESSION_PERMANENT'] = True 
@@ -44,7 +44,7 @@ app.config['SESSION_COOKIE_NAME'] = "fc_session_stable"
 app.config['JSON_AS_ASCII'] = False
 
 # ==============================================================================
-# CONFIGURAÇÃO DO BANCO DE DADOS PRINCIPAL
+# CONFIGURAÃ‡ÃƒO DO BANCO DE DADOS PRINCIPAL
 # ==============================================================================
 database_url = os.getenv("DATABASE_URL")
 
@@ -54,15 +54,15 @@ if database_url:
     elif database_url.startswith("postgresql://"):
         database_url = database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-    logger.info(f"Conexão de banco: PostgreSQL (Nuvem) com driver Psycopg2")
+    logger.info(f"ConexÃ£o de banco: PostgreSQL (Nuvem) com driver Psycopg2")
     
 else:
     db_name = "database.db"
     db_path = os.path.join(base_path, db_name)
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
-    logger.info(f"Conexão de banco: SQLite Local: {db_path}")
+    logger.info(f"ConexÃ£o de banco: SQLite Local: {db_path}")
 
-# --- DIAGNÓSTICO VISUAL NO TERMINAL ---
+# --- DIAGNÃ“STICO VISUAL NO TERMINAL ---
 print("\n" + "="*80)
 print(f" >>> SISTEMA INICIADO <<<")
 print(f" BANCO ATIVO: {'PostgreSQL (Nuvem)' if database_url else f'SQLite Local'}")
@@ -71,7 +71,7 @@ print("="*80 + "\n")
 db = SQLAlchemy(app)
 
 # ==============================================================================
-# TRAVA DE SEGURANÇA MESTRA (OPCIONAL)
+# TRAVA DE SEGURANÃ‡A MESTRA (OPCIONAL)
 # ==============================================================================
 CHAVE_MESTRA = os.getenv("CHAVE_MESTRA", "")
 
@@ -115,7 +115,7 @@ class Maquina(db.Model):
     ativa = db.Column(db.Boolean, default=True)
     criada_em = db.Column(db.DateTime, default=datetime.now)
     expira_em = db.Column(db.DateTime, nullable=True)
-    # observacoes = db.Column(db.Text)  # Removida - não existe no banco PostgreSQL
+    # # observacoes = db.Column(db.Text)  # Removida - não existe no banco PostgreSQL  # Removida - não existe no banco PostgreSQL
     data_cadastro = db.Column(db.DateTime, default=datetime.now)
     loja = db.relationship('Loja')
 
@@ -233,11 +233,11 @@ class FichaItem(db.Model):
     loja_id = db.Column(db.Integer, db.ForeignKey('lojas.id'))
 
 # ==============================================================================
-# FUNÇÕES AUXILIARES
+# FUNÃ‡Ã•ES AUXILIARES
 # ==============================================================================
 def dias_restantes(expira_em):
     if not expira_em:
-        return "∞"
+        return "âˆž"
     hoje = datetime.now().date()
     if isinstance(expira_em, datetime):
         expira_em = expira_em.date()
@@ -258,10 +258,10 @@ def status_licenca(loja):
 def verificar_licenca_maquina(loja_id, fingerprint):
     loja = db.session.get(Loja, loja_id)
     if not loja or not loja.licenca_ativa:
-        return False, "Licença da loja inativa"
+        return False, "LicenÃ§a da loja inativa"
     
     if loja.data_expiracao and loja.data_expiracao < datetime.now():
-        return False, "Licença expirada"
+        return False, "LicenÃ§a expirada"
     
     maquina = Maquina.query.filter_by(
         loja_id=loja_id,
@@ -269,10 +269,10 @@ def verificar_licenca_maquina(loja_id, fingerprint):
     ).first()
     
     if not maquina:
-        return False, "Máquina não autorizada"
+        return False, "MÃ¡quina nÃ£o autorizada"
     
     if not maquina.ativa:
-        return False, "Máquina bloqueada"
+        return False, "MÃ¡quina bloqueada"
     
     total_maquinas = Maquina.query.filter_by(
         loja_id=loja_id,
@@ -280,9 +280,9 @@ def verificar_licenca_maquina(loja_id, fingerprint):
     ).count()
     
     if total_maquinas > loja.max_maquinas:
-        return False, f"Limite de {loja.max_maquinas} máquina(s) excedido"
+        return False, f"Limite de {loja.max_maquinas} mÃ¡quina(s) excedido"
     
-    return True, "Licença válida"
+    return True, "LicenÃ§a vÃ¡lida"
 
 # ==============================================================================
 # SISTEMA DE ALERTAS POR EMAIL
@@ -295,7 +295,7 @@ def enviar_alerta_email(assunto, mensagem):
         email_senha = os.getenv("ALERT_EMAIL_PASSWORD")
         
         if not email_senha:
-            logger.warning("ALERTA: Sistema de email não configurado")
+            logger.warning("ALERTA: Sistema de email nÃ£o configurado")
             return
         
         msg = MIMEText(mensagem)
@@ -307,14 +307,14 @@ def enviar_alerta_email(assunto, mensagem):
             server.login(email_remetente, email_senha)
             server.send_message(msg)
         
-        logger.info(f"✅ Alerta enviado por email: {assunto}")
+        logger.info(f"âœ… Alerta enviado por email: {assunto}")
         return True
     except Exception as e:
-        logger.error(f"❌ Erro ao enviar email: {e}")
+        logger.error(f"âŒ Erro ao enviar email: {e}")
         return False
 
 # ==============================================================================
-# FILTROS DE FORMATAÇÃO JINJA2
+# FILTROS DE FORMATAÃ‡ÃƒO JINJA2
 # ==============================================================================
 @app.template_filter('moeda')
 def moeda_filter(v):
@@ -347,10 +347,10 @@ def status_licenca_filter(loja):
     return status_licenca(loja)
 
 # ==============================================================================
-# DECORADORES DE SEGURANÇA
+# DECORADORES DE SEGURANÃ‡A
 # ==============================================================================
 # ==============================================================================
-# DECORADORES DE SEGURANÇA - REVISADOS
+# DECORADORES DE SEGURANÃ‡A - REVISADOS
 # ==============================================================================
 def login_required(f):
     @wraps(f)
@@ -365,12 +365,12 @@ def admin_required(f):
     def decorated_function(*args, **kwargs):
         usuario = db.session.get(Usuario, session.get('usuario_id'))
         if not usuario:
-            flash("Sessão inválida!", "danger")
+            flash("SessÃ£o invÃ¡lida!", "danger")
             return redirect('/login')
         
         # APENAS SUPER ADMIN OU ADMIN PODE ACESSAR
         if usuario.role != 'admin' and usuario.username != 'bpereira':
-            flash("ACESSO NEGADO: Requer privilégios de Administrador.", "danger")
+            flash("ACESSO NEGADO: Requer privilÃ©gios de Administrador.", "danger")
             return redirect(url_for('index'))
         
         return f(*args, **kwargs)
@@ -389,15 +389,15 @@ def super_admin_required(f):
 def admin_config_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        """Apenas Super Admin (bpereira) pode acessar configurações sigilosas"""
+        """Apenas Super Admin (bpereira) pode acessar configuraÃ§Ãµes sigilosas"""
         if session.get('usuario_nome') != 'bpereira':
-            flash("ACESSO NEGADO: Apenas o super administrador pode acessar esta área.", "danger")
+            flash("ACESSO NEGADO: Apenas o super administrador pode acessar esta Ã¡rea.", "danger")
             return redirect(url_for('index'))
         return f(*args, **kwargs)
     return decorated_function
 
 # ==============================================================================
-# MIDDLEWARE: VERIFICAÇÃO DE LOJA ATIVA COM ALERTAS
+# MIDDLEWARE: VERIFICAÃ‡ÃƒO DE LOJA ATIVA COM ALERTAS
 # ==============================================================================
 @app.before_request
 def verificar_loja_ativa():
@@ -422,46 +422,46 @@ def verificar_loja_ativa():
         return
 
     if not usuario.loja_id:
-        flash('Usuário sem loja vinculada.', 'danger')
+        flash('UsuÃ¡rio sem loja vinculada.', 'danger')
         session.clear()
         return redirect('/login')
 
     loja = db.session.get(Loja, usuario.loja_id)
     if not loja or not loja.ativo:
-        flash("Esta loja está bloqueada.", "danger")
+        flash("Esta loja estÃ¡ bloqueada.", "danger")
         session.clear()
         return redirect('/login')
 
     if loja.licenca_ativa == False:
         mensagem = f"""
-        🚨 TENTATIVA DE ACESSO A LOJA BLOQUEADA!
+        ðŸš¨ TENTATIVA DE ACESSO A LOJA BLOQUEADA!
         
-        📋 DETALHES:
-        • Loja: {loja.nome} (ID: {loja.id})
-        • Usuário: {usuario.username} (ID: {usuario.id})
-        • IP: {request.remote_addr}
-        • Fingerprint: {request.cookies.get('fp', 'Não detectado')}
-        • Data: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
-        • User-Agent: {request.user_agent.string[:100]}
+        ðŸ“‹ DETALHES:
+        â€¢ Loja: {loja.nome} (ID: {loja.id})
+        â€¢ UsuÃ¡rio: {usuario.username} (ID: {usuario.id})
+        â€¢ IP: {request.remote_addr}
+        â€¢ Fingerprint: {request.cookies.get('fp', 'NÃ£o detectado')}
+        â€¢ Data: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+        â€¢ User-Agent: {request.user_agent.string[:100]}
         """
-        enviar_alerta_email("🚨 Loja Bloqueada - Tentativa de Acesso", mensagem)
+        enviar_alerta_email("ðŸš¨ Loja Bloqueada - Tentativa de Acesso", mensagem)
         
         session.clear()
         return render_template('licenca_inativa.html', loja=loja), 403
     
     if loja.data_expiracao and loja.data_expiracao < datetime.now():
         mensagem = f"""
-        ⚠️ TENTATIVA DE ACESSO COM LICENÇA EXPIRADA!
+        âš ï¸ TENTATIVA DE ACESSO COM LICENÃ‡A EXPIRADA!
         
-        📋 DETALHES:
-        • Loja: {loja.nome}
-        • Usuário: {usuario.username}
-        • Licença expirou em: {loja.data_expiracao.strftime('%d/%m/%Y')}
-        • Dias expirado: {(datetime.now().date() - loja.data_expiracao.date()).days} dias
-        • IP: {request.remote_addr}
-        • Data tentativa: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+        ðŸ“‹ DETALHES:
+        â€¢ Loja: {loja.nome}
+        â€¢ UsuÃ¡rio: {usuario.username}
+        â€¢ LicenÃ§a expirou em: {loja.data_expiracao.strftime('%d/%m/%Y')}
+        â€¢ Dias expirado: {(datetime.now().date() - loja.data_expiracao.date()).days} dias
+        â€¢ IP: {request.remote_addr}
+        â€¢ Data tentativa: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
         """
-        enviar_alerta_email("⚠️ Licença Expirada - Tentativa de Acesso", mensagem)
+        enviar_alerta_email("âš ï¸ LicenÃ§a Expirada - Tentativa de Acesso", mensagem)
         
         session.clear()
         return render_template('licenca_expirada.html', loja=loja), 403
@@ -474,18 +474,18 @@ def verificar_loja_ativa():
     
     if not licenca_valida:
         mensagem = f"""
-        🔴 TENTATIVA DE ACESSO NÃO AUTORIZADO!
+        ðŸ”´ TENTATIVA DE ACESSO NÃƒO AUTORIZADO!
         
-        📋 DETALHES:
-        • Motivo: {motivo}
-        • Loja: {loja.nome}
-        • Usuário: {usuario.username}
-        • IP: {request.remote_addr}
-        • Fingerprint: {fp}
-        • Data: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
-        • User-Agent: {request.user_agent.string[:100]}
+        ðŸ“‹ DETALHES:
+        â€¢ Motivo: {motivo}
+        â€¢ Loja: {loja.nome}
+        â€¢ UsuÃ¡rio: {usuario.username}
+        â€¢ IP: {request.remote_addr}
+        â€¢ Fingerprint: {fp}
+        â€¢ Data: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+        â€¢ User-Agent: {request.user_agent.string[:100]}
         """
-        enviar_alerta_email("🔴 Acesso Não Autorizado", mensagem)
+        enviar_alerta_email("ðŸ”´ Acesso NÃ£o Autorizado", mensagem)
         
         log = LogAcesso(
             loja_id=usuario.loja_id,
@@ -542,7 +542,7 @@ def inject_user_info():
         return {}
 
 # ==============================================================================
-# MOTOR DE CÁLCULO AVANÇADO
+# MOTOR DE CÃLCULO AVANÃ‡ADO
 # ==============================================================================
 class EngineCalculo:
     @staticmethod
@@ -613,18 +613,18 @@ def login():
         
         usuario = Usuario.query.filter_by(username=username).first()
         
-        print(f"🔍 LOGIN TENTATIVA: usuario='{username}', senha_digitada='{password}', usuario_no_BD='{usuario.username if usuario else None}', senha_no_BD='{usuario.password if usuario else None}'")
+        print(f"ðŸ” LOGIN TENTATIVA: usuario='{username}', senha_digitada='{password}', usuario_no_BD='{usuario.username if usuario else None}', senha_no_BD='{usuario.password if usuario else None}'")
         
         if usuario and usuario.password == password:
             if not usuario.loja_id:
                 loja = Loja.query.first()
                 if not loja:
-                    loja = Loja(nome="Loja Padrão", ativo=True, licenca_ativa=True)
+                    loja = Loja(nome="Loja PadrÃ£o", ativo=True, licenca_ativa=True)
                     db.session.add(loja)
                     db.session.commit()
                 usuario.loja_id = loja.id
                 db.session.commit()
-                print(f"✅ Loja atribuída ao usuário: {loja.id}")
+                print(f"âœ… Loja atribuÃ­da ao usuÃ¡rio: {loja.id}")
             
             session['usuario_id'] = usuario.id
             session['usuario_nome'] = usuario.username
@@ -635,18 +635,18 @@ def login():
             if not fingerprint:
                 import hashlib
                 fp = hashlib.md5(f"{username}{datetime.now().timestamp()}".encode()).hexdigest()
-                print(f"✅ Fingerprint gerado: {fp[:20]}...")
+                print(f"âœ… Fingerprint gerado: {fp[:20]}...")
             
             flash(f"Bem-vindo, {usuario.username}!", "success")
             return redirect(url_for('index'))
         else:
-            flash("Usuário ou senha incorretos!", "danger")
+            flash("UsuÃ¡rio ou senha incorretos!", "danger")
     
     return render_template('login.html')
 
 @app.route('/gerar-minha-licenca')
 def gerar_minha_licenca():
-    """Gera licença automática para admin"""
+    """Gera licenÃ§a automÃ¡tica para admin"""
     import secrets
     import string
     
@@ -664,12 +664,12 @@ def gerar_minha_licenca():
     db.session.commit()
     
     return f'''
-    <h1>✅ LICENÇA GERADA!</h1>
+    <h1>âœ… LICENÃ‡A GERADA!</h1>
     <h3>Chave: {chave}</h3>
     <p>Loja: {loja.nome}</p>
     <p>Status: Ativa</p>
     <hr>
-    <a href="/ativar_licenca" class="btn btn-success">ATIVAR LICENÇA AGORA</a>
+    <a href="/ativar_licenca" class="btn btn-success">ATIVAR LICENÃ‡A AGORA</a>
     '''
 
 @app.route('/quem-sou-eu')
@@ -677,14 +677,14 @@ def gerar_minha_licenca():
 def quem_sou_eu():
     usuario = db.session.get(Usuario, session['usuario_id'])
     return f"""
-    <h3>👤 INFORMAÇÕES DO USUÁRIO</h3>
+    <h3>ðŸ‘¤ INFORMAÃ‡Ã•ES DO USUÃRIO</h3>
     <p><strong>Username:</strong> {usuario.username}</p>
     <p><strong>Role no banco:</strong> {usuario.role}</p>
-    <p><strong>Role na sessão:</strong> {session.get('role')}</p>
+    <p><strong>Role na sessÃ£o:</strong> {session.get('role')}</p>
     <p><strong>ID da Loja:</strong> {usuario.loja_id}</p>
     <hr>
-    <p><strong>É admin?</strong> {usuario.role == 'admin'}</p>
-    <p><strong>É super admin (bpereira)?</strong> {usuario.username == 'bpereira'}</p>
+    <p><strong>Ã‰ admin?</strong> {usuario.role == 'admin'}</p>
+    <p><strong>Ã‰ super admin (bpereira)?</strong> {usuario.username == 'bpereira'}</p>
     <hr>
     <a href="/" class="btn btn-primary">Voltar</a>
     <a href="/make-admin" class="btn btn-warning">Tornar-me Admin</a>
@@ -696,26 +696,26 @@ def make_admin():
     usuario = db.session.get(Usuario, session['usuario_id'])
     
     if usuario.role == 'admin':
-        return "Você já é administrador!"
+        return "VocÃª jÃ¡ Ã© administrador!"
     
     usuario.role = 'admin'
     session['role'] = 'admin'
     db.session.commit()
     
     return f"""
-    <h3>✅ AGORA VOCÊ É ADMINISTRADOR!</h3>
-    <p>Usuário: <strong>{usuario.username}</strong></p>
+    <h3>âœ… AGORA VOCÃŠ Ã‰ ADMINISTRADOR!</h3>
+    <p>UsuÃ¡rio: <strong>{usuario.username}</strong></p>
     <p>Novo role: <strong>{usuario.role}</strong></p>
     <hr>
     <a href="/config/admin" class="btn btn-success">
         <i class="fas fa-cog"></i> ACESSAR PAINEL ADMIN
     </a>
-    <a href="/" class="btn btn-primary">Voltar ao Início</a>
+    <a href="/" class="btn btn-primary">Voltar ao InÃ­cio</a>
     """
 
 @app.route('/criar-admin-fixo')
 def criar_admin_fixo():
-    """ROTA TEMPORÁRIA - Criar admin fixo"""
+    """ROTA TEMPORÃRIA - Criar admin fixo"""
     try:
         import sqlite3
         conn = sqlite3.connect('database.db')
@@ -731,8 +731,8 @@ def criar_admin_fixo():
         conn.close()
         
         return '''
-        <h1>✅ ADMIN CRIADO!</h1>
-        <h3>Usuário: admin</h3>
+        <h1>âœ… ADMIN CRIADO!</h1>
+        <h3>UsuÃ¡rio: admin</h3>
         <h3>Senha: admin123</h3>
         <a href="/login">FAZER LOGIN AGORA</a>
         '''
@@ -825,7 +825,7 @@ def index():
                              stats=stats)
     except Exception as e:
         logger.error(f"Erro no Index: {e}")
-        return f"Erro Crítico: {e}", 500
+        return f"Erro CrÃ­tico: {e}", 500
 
 # ==============================================================================
 # ROTAS PARA SUPER ADMIN (APENAS bpereira)
@@ -900,12 +900,12 @@ def admin_gerar_licenca():
             ip=request.remote_addr,
             fingerprint='SISTEMA',
             usuario_id=session.get('usuario_id'),
-            detalhes=f'Licença gerada por {session.get("usuario_nome")}. Validade: {dias_validade} dias, Máx máquinas: {max_maquinas}'
+            detalhes=f'LicenÃ§a gerada por {session.get("usuario_nome")}. Validade: {dias_validade} dias, MÃ¡x mÃ¡quinas: {max_maquinas}'
         )
         db.session.add(historico)
         
         db.session.commit()
-        flash(f"Licença gerada para {loja.nome}: {chave}", "success")
+        flash(f"LicenÃ§a gerada para {loja.nome}: {chave}", "success")
     
     return redirect(url_for('admin_master'))
 
@@ -925,12 +925,12 @@ def admin_toggle_licenca(loja_id):
             ip=request.remote_addr,
             fingerprint='SISTEMA',
             usuario_id=session.get('usuario_id'),
-            detalhes=f'Licença {"bloqueada" if not novo_status else "desbloqueada"} por {session.get("usuario_nome")}'
+            detalhes=f'LicenÃ§a {"bloqueada" if not novo_status else "desbloqueada"} por {session.get("usuario_nome")}'
         )
         db.session.add(historico)
         
         db.session.commit()
-        flash(f"Licença {'ativada' if loja.licenca_ativa else 'desativada'} para {loja.nome}", "info")
+        flash(f"LicenÃ§a {'ativada' if loja.licenca_ativa else 'desativada'} para {loja.nome}", "info")
     
     return redirect(url_for('admin_master'))
 
@@ -954,12 +954,12 @@ def admin_extender_licenca(loja_id):
             ip=request.remote_addr,
             fingerprint='SISTEMA',
             usuario_id=session.get('usuario_id'),
-            detalhes=f'Licença estendida em {dias_adicionais} dias por {session.get("usuario_nome")}. Nova data: {loja.data_expiracao.strftime("%d/%m/%Y")}'
+            detalhes=f'LicenÃ§a estendida em {dias_adicionais} dias por {session.get("usuario_nome")}. Nova data: {loja.data_expiracao.strftime("%d/%m/%Y")}'
         )
         db.session.add(historico)
         
         db.session.commit()
-        flash(f"Licença estendida em {dias_adicionais} dias para {loja.nome}", "success")
+        flash(f"LicenÃ§a estendida em {dias_adicionais} dias para {loja.nome}", "success")
     
     return redirect(url_for('admin_master'))
 
@@ -972,7 +972,7 @@ def verificar_limite_lojas():
             'total': total_lojas,
             'limite': 10,
             'vagas': 0,
-            'mensagem': f'❌ LIMITE ATINGIDO: {total_lojas}/10 lojas'
+            'mensagem': f'âŒ LIMITE ATINGIDO: {total_lojas}/10 lojas'
         }
     else:
         return {
@@ -980,7 +980,7 @@ def verificar_limite_lojas():
             'total': total_lojas,
             'limite': 10,
             'vagas': 10 - total_lojas,
-            'mensagem': f'✅ Vagas disponíveis: {10 - total_lojas}'
+            'mensagem': f'âœ… Vagas disponÃ­veis: {10 - total_lojas}'
         }
 
 
@@ -1001,30 +1001,30 @@ def config_admin():
             nome = request.form.get('nome_loja', '').strip()
             
             if nome:
-                # 🔒 VERIFICAÇÃO DE LIMITE - 10 LOJAS MÁXIMO
+                # ðŸ”’ VERIFICAÃ‡ÃƒO DE LIMITE - 10 LOJAS MÃXIMO
                 total_lojas = Loja.query.count()
                 
                 if total_lojas >= 10:
-                    flash(f"❌ LIMITE ATINGIDO! Já existem {total_lojas} lojas cadastradas.", "danger")
-                    # Enviar alerta de tentativa de criar além do limite
+                    flash(f"âŒ LIMITE ATINGIDO! JÃ¡ existem {total_lojas} lojas cadastradas.", "danger")
+                    # Enviar alerta de tentativa de criar alÃ©m do limite
                     mensagem = f"""
-                    🚨 TENTATIVA DE CRIAR LOJA ALÉM DO LIMITE!
+                    ðŸš¨ TENTATIVA DE CRIAR LOJA ALÃ‰M DO LIMITE!
                     
-                    📋 DETALHES:
-                    • Sistema atingiu o limite de 10 lojas
-                    • Total atual: {total_lojas}/10
-                    • Tentativa de criar: {nome}
-                    • Usuário: {usuario.username}
-                    • Data: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
-                    • IP: {request.remote_addr}
+                    ðŸ“‹ DETALHES:
+                    â€¢ Sistema atingiu o limite de 10 lojas
+                    â€¢ Total atual: {total_lojas}/10
+                    â€¢ Tentativa de criar: {nome}
+                    â€¢ UsuÃ¡rio: {usuario.username}
+                    â€¢ Data: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+                    â€¢ IP: {request.remote_addr}
                     
-                    ⚠️ BLOQUEADO AUTOMATICAMENTE
+                    âš ï¸ BLOQUEADO AUTOMATICAMENTE
                     """
-                    enviar_alerta_email("🚨 Limite de Lojas Atingido", mensagem)
+                    enviar_alerta_email("ðŸš¨ Limite de Lojas Atingido", mensagem)
                     
                     return redirect(url_for('config_admin'))
                 
-                # Ainda há vaga, pode criar
+                # Ainda hÃ¡ vaga, pode criar
                 import secrets, string
                 chave = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(32))
                 
@@ -1034,12 +1034,12 @@ def config_admin():
                     licenca_ativa=True,
                     chave_licenca=chave,
                     data_expiracao=datetime.now() + timedelta(days=365),
-                    max_maquinas=3  # Limite padrão de máquinas por loja
+                    max_maquinas=3  # Limite padrÃ£o de mÃ¡quinas por loja
                 )
                 db.session.add(nova_loja)
                 db.session.commit()
                 
-                # Registrar no histórico
+                # Registrar no histÃ³rico
                 historico = HistoricoLicenca(
                     loja_id=nova_loja.id,
                     chave_licenca=chave,
@@ -1053,24 +1053,24 @@ def config_admin():
                 
                 # Enviar alerta de nova loja criada
                 mensagem = f"""
-                ✅ NOVA LOJA CRIADA (DENTRO DO LIMITE)
+                âœ… NOVA LOJA CRIADA (DENTRO DO LIMITE)
                 
-                📋 DETALHES:
-                • Loja: {nome}
-                • Chave: {chave}
-                • Status: Ativa
-                • Expira em: {(datetime.now() + timedelta(days=365)).strftime('%d/%m/%Y')}
-                • Criada por: {usuario.username}
-                • Total lojas agora: {total_lojas + 1}/10
-                • Data criação: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+                ðŸ“‹ DETALHES:
+                â€¢ Loja: {nome}
+                â€¢ Chave: {chave}
+                â€¢ Status: Ativa
+                â€¢ Expira em: {(datetime.now() + timedelta(days=365)).strftime('%d/%m/%Y')}
+                â€¢ Criada por: {usuario.username}
+                â€¢ Total lojas agora: {total_lojas + 1}/10
+                â€¢ Data criaÃ§Ã£o: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
                 
-                📊 ESTATÍSTICAS:
-                • Lojas ativas: {total_lojas + 1}
-                • Vagas restantes: {10 - (total_lojas + 1)}
+                ðŸ“Š ESTATÃSTICAS:
+                â€¢ Lojas ativas: {total_lojas + 1}
+                â€¢ Vagas restantes: {10 - (total_lojas + 1)}
                 """
-                enviar_alerta_email("✅ Nova Loja Criada", mensagem)
+                enviar_alerta_email("âœ… Nova Loja Criada", mensagem)
                 
-                flash(f"✅ Loja '{nome}' criada com sucesso! Total: {total_lojas + 1}/10", "success")
+                flash(f"âœ… Loja '{nome}' criada com sucesso! Total: {total_lojas + 1}/10", "success")
         
         elif tipo == 'toggle_loja' and usuario.username == 'bpereira':
             loja_id = request.form.get('loja_id')
@@ -1086,7 +1086,7 @@ def config_admin():
             if loja:
                 loja.licenca_ativa = not loja.licenca_ativa
                 db.session.commit()
-                flash(f"Licença {'ativada' if loja.licenca_ativa else 'desativada'}!", "info")
+                flash(f"LicenÃ§a {'ativada' if loja.licenca_ativa else 'desativada'}!", "info")
         
         elif tipo == 'add_user':
             username = request.form.get('username', '').strip()
@@ -1103,7 +1103,7 @@ def config_admin():
                 )
                 db.session.add(novo)
                 db.session.commit()
-                flash(f"Usuário {username} criado!", "success")
+                flash(f"UsuÃ¡rio {username} criado!", "success")
         
         elif tipo == 'toggle_role':
             user_id = request.form.get('user_id')
@@ -1111,7 +1111,7 @@ def config_admin():
             if user:
                 user.role = 'admin' if user.role == 'user' else 'user'
                 db.session.commit()
-                flash(f"Usuário agora é {user.role}!", "info")
+                flash(f"UsuÃ¡rio agora Ã© {user.role}!", "info")
         
         elif tipo == 'reset_password':
             user_id = request.form.get('user_id')
@@ -1125,7 +1125,7 @@ def config_admin():
                     db.session.commit()
                     flash("Senha alterada!", "success")
             else:
-                flash("Senhas não coincidem!", "danger")
+                flash("Senhas nÃ£o coincidem!", "danger")
         
         elif tipo == 'gerar_nova_chave' and usuario.username == 'bpereira':
             loja_id = request.form.get('loja_id')
@@ -1142,7 +1142,7 @@ def config_admin():
         
         return redirect(url_for('config_admin'))
     
-    # 🔥🔥🔥 PARTE PARA REQUISIÇÕES GET (ESTAVA FALTANDO) 🔥🔥🔥
+    # ðŸ”¥ðŸ”¥ðŸ”¥ PARTE PARA REQUISIÃ‡Ã•ES GET (ESTAVA FALTANDO) ðŸ”¥ðŸ”¥ðŸ”¥
     # Dados para o template
     if usuario.username == 'bpereira':
         lojas = Loja.query.all()
@@ -1151,7 +1151,7 @@ def config_admin():
         lojas = Loja.query.filter_by(id=usuario.loja_id).all()
         usuarios = Usuario.query.filter_by(loja_id=usuario.loja_id).all()
     
-    # 🔥🔥🔥 ESTE RETURN É ESSENCIAL! 🔥🔥🔥
+    # ðŸ”¥ðŸ”¥ðŸ”¥ ESTE RETURN Ã‰ ESSENCIAL! ðŸ”¥ðŸ”¥ðŸ”¥
     return render_template('config_admin.html',
                          lojas=lojas,
                          usuarios=usuarios,
@@ -1160,9 +1160,9 @@ def config_admin():
 
 @app.route('/config/basico', methods=['GET', 'POST'])
 @login_required
-@admin_required  # ← QUALQUER ADMIN pode acessar
+@admin_required  # â† QUALQUER ADMIN pode acessar
 def config_basico():
-    """Painel básico de configuração para admins normais"""
+    """Painel bÃ¡sico de configuraÃ§Ã£o para admins normais"""
     usuario_id = session['usuario_id']
     usuario = db.session.get(Usuario, usuario_id)
     
@@ -1205,7 +1205,7 @@ def config_basico():
 @login_required
 @admin_required
 def historico_chaves():
-    """Histórico simples de licenças"""
+    """HistÃ³rico simples de licenÃ§as"""
     historico = HistoricoLicenca.query.order_by(HistoricoLicenca.data.desc()).limit(50).all()
     return render_template('historico_chaves_simple.html', historico=historico)
 
@@ -1215,7 +1215,7 @@ def historico_chaves():
 def admin_detalhes_loja(id):
     loja = db.session.get(Loja, id)
     if not loja:
-        flash("Loja não encontrada!", "danger")
+        flash("Loja nÃ£o encontrada!", "danger")
         return redirect(url_for('config_admin'))
     
     usuario = db.session.get(Usuario, session['usuario_id'])
@@ -1243,7 +1243,7 @@ def renovar_maquina(id):
     if maquina:
         maquina.expira_em = datetime.now() + timedelta(days=365)
         db.session.commit()
-        flash(f"Máquina renovada por 365 dias!", "success")
+        flash(f"MÃ¡quina renovada por 365 dias!", "success")
     
     return redirect(url_for('config_admin'))
 
@@ -1297,13 +1297,13 @@ def exportar_maquinas():
     }
 
 # ==============================================================================
-# ROTAS DE MÁQUINAS (ÚNICAS - CORRIGIDAS)
+# ROTAS DE MÃQUINAS (ÃšNICAS - CORRIGIDAS)
 # ==============================================================================
 @app.route('/maquinas')
 @login_required
 @admin_required
 def listar_maquinas():
-    """Lista todas as máquinas"""
+    """Lista todas as mÃ¡quinas"""
     usuario = db.session.get(Usuario, session['usuario_id'])
     
     if usuario.username == 'bpereira':
@@ -1319,7 +1319,7 @@ def listar_maquinas():
 @login_required
 @admin_required
 def nova_maquina():
-    """Adicionar nova máquina"""
+    """Adicionar nova mÃ¡quina"""
     if request.method == 'POST':
         fingerprint = request.form.get('fingerprint', '').strip()
         loja_id = request.form.get('loja_id')
@@ -1335,7 +1335,7 @@ def nova_maquina():
             )
             db.session.add(nova)
             db.session.commit()
-            flash('Máquina cadastrada com sucesso!', 'success')
+            flash('MÃ¡quina cadastrada com sucesso!', 'success')
             return redirect('/maquinas')
     
     return render_template('maquina_nova.html',
@@ -1345,12 +1345,12 @@ def nova_maquina():
 @login_required
 @admin_required
 def toggle_maquina(id):
-    """Ativar/desativar máquina"""
+    """Ativar/desativar mÃ¡quina"""
     maquina = db.session.get(Maquina, id)
     if maquina:
         maquina.ativa = not maquina.ativa
         db.session.commit()
-        flash(f'Máquina {"ativada" if maquina.ativa else "desativada"}!', 'info')
+        flash(f'MÃ¡quina {"ativada" if maquina.ativa else "desativada"}!', 'info')
     
     return redirect(request.referrer or '/maquinas')
 
@@ -1358,38 +1358,38 @@ def toggle_maquina(id):
 @login_required
 @admin_required
 def excluir_maquina(id):
-    """Excluir máquina"""
+    """Excluir mÃ¡quina"""
     maquina = db.session.get(Maquina, id)
     if maquina:
         db.session.delete(maquina)
         db.session.commit()
-        flash('Máquina excluída!', 'success')
+        flash('MÃ¡quina excluÃ­da!', 'success')
     
     return redirect('/maquinas')
 
 # ==============================================================================
-# ROTA EXCLUIR USUÁRIO
+# ROTA EXCLUIR USUÃRIO
 # ==============================================================================
 @app.route('/excluir/usuario/<int:id>')
 @login_required
 @admin_required
 def excluir_usuario(id):
-    """Excluir usuário (apenas super admin)"""
+    """Excluir usuÃ¡rio (apenas super admin)"""
     usuario = db.session.get(Usuario, session['usuario_id'])
     if usuario.username != 'bpereira':
-        flash('Apenas Super Admin pode excluir usuários!', 'danger')
+        flash('Apenas Super Admin pode excluir usuÃ¡rios!', 'danger')
         return redirect('/config/admin')
     
     user = db.session.get(Usuario, id)
     if user and user.id != usuario.id:
         db.session.delete(user)
         db.session.commit()
-        flash(f'Usuário {user.username} excluído!', 'success')
+        flash(f'UsuÃ¡rio {user.username} excluÃ­do!', 'success')
     
     return redirect('/config/admin')
 
 # ==============================================================================
-# ROTAS PARA USUÁRIOS NORMAIS
+# ROTAS PARA USUÃRIOS NORMAIS
 # ==============================================================================
 @app.route('/config', methods=['GET', 'POST'])
 @login_required
@@ -1481,7 +1481,7 @@ def editar_insumo(id):
     usuario = db.session.get(Usuario, uid)
     
     if not ins:
-        flash("Insumo não encontrado.", "danger")
+        flash("Insumo nÃ£o encontrado.", "danger")
         return redirect(url_for('insumos'))
     
     if usuario.username != 'bpereira' and ins.user_id != uid:
@@ -1502,7 +1502,7 @@ def editar_insumo(id):
             return redirect(url_for('insumos'))
         except Exception as e:
             db.session.rollback()
-            flash(f"Erro na edição: {e}", "danger")
+            flash(f"Erro na ediÃ§Ã£o: {e}", "danger")
     
     return render_template('insumos_form.html', i=ins, 
                            categorias=Categoria.query.filter_by(user_id=uid).all(), 
@@ -1535,7 +1535,7 @@ def nova_base():
         try:
             nome_base = request.form.get('nome')
             if not nome_base:
-                flash("Nome da base é obrigatório!", "warning")
+                flash("Nome da base Ã© obrigatÃ³rio!", "warning")
                 return redirect(url_for('bases'))
 
             rend_val = float(request.form.get('rendimento', '1').replace(',', '.') or 1)
@@ -1578,7 +1578,7 @@ def editar_base(id):
     usuario = db.session.get(Usuario, uid)
     
     if not base_obj:
-        flash("Base não encontrada.", "danger")
+        flash("Base nÃ£o encontrada.", "danger")
         return redirect(url_for('bases'))
     
     if usuario.username != 'bpereira' and base_obj.user_id != uid:
@@ -1660,7 +1660,7 @@ def nova_ficha():
                     ))
             
             db.session.commit()
-            flash("Ficha Técnica gerada com sucesso!", "success")
+            flash("Ficha TÃ©cnica gerada com sucesso!", "success")
             return redirect(url_for('index'))
         except Exception as e:
             db.session.rollback()
@@ -1679,7 +1679,7 @@ def ver_ficha(id):
     usuario = db.session.get(Usuario, uid)
     
     if not f:
-        flash("Ficha não encontrada.", "warning")
+        flash("Ficha nÃ£o encontrada.", "warning")
         return redirect(url_for('index'))
     
     if usuario.username != 'bpereira' and f.user_id != uid:
@@ -1697,7 +1697,7 @@ def editar_ficha(id):
     usuario = db.session.get(Usuario, uid)
     
     if not f:
-        flash("Ficha não encontrada.", "danger")
+        flash("Ficha nÃ£o encontrada.", "danger")
         return redirect(url_for('index'))
     
     if usuario.username != 'bpereira' and f.user_id != uid:
@@ -1737,7 +1737,7 @@ def editar_ficha(id):
                     ))
                 
             db.session.commit()
-            flash("Ficha Técnica atualizada com sucesso!", "info")
+            flash("Ficha TÃ©cnica atualizada com sucesso!", "info")
             return redirect(url_for('index'))
         except Exception as e:
             db.session.rollback()
@@ -1749,7 +1749,7 @@ def editar_ficha(id):
                          bases=Base.query.filter_by(user_id=uid).all())
 
 # ==============================================================================
-# ROTA DE EXCLUSÃO
+# ROTA DE EXCLUSÃƒO
 # ==============================================================================
 @app.route('/excluir/<string:alvo>/<int:id>')
 @login_required
@@ -1765,7 +1765,7 @@ def excluir(alvo, id):
     
     Modelo = mapa.get(alvo)
     if not Modelo:
-        flash("Operação inválida.", "danger")
+        flash("OperaÃ§Ã£o invÃ¡lida.", "danger")
         return redirect(url_for('index'))
     
     obj = db.session.get(Modelo, id)
@@ -1773,36 +1773,36 @@ def excluir(alvo, id):
     usuario = db.session.get(Usuario, uid)
     
     if not obj:
-        flash("Item não encontrado.", "danger")
+        flash("Item nÃ£o encontrado.", "danger")
         return redirect(url_for('index'))
     
     if alvo == 'usuario' and usuario.username != 'bpereira':
-        flash("Somente o administrador mestre pode excluir usuários.", "danger")
+        flash("Somente o administrador mestre pode excluir usuÃ¡rios.", "danger")
         return redirect(url_for('config_admin'))
         
     elif alvo in ['insumo', 'ficha', 'base', 'categoria', 'unidade']:
         if usuario.username != 'bpereira' and hasattr(obj, 'user_id') and obj.user_id != uid:
-            flash("Você não tem permissão para excluir este item.", "danger")
+            flash("VocÃª nÃ£o tem permissÃ£o para excluir este item.", "danger")
             return redirect(url_for('index'))
     
     try:
         if alvo == 'usuario' and obj.username != 'bpereira':
             mensagem = f"""
-            👤 USUÁRIO EXCLUÍDO DO SISTEMA
+            ðŸ‘¤ USUÃRIO EXCLUÃDO DO SISTEMA
             
-            ℹ️ DETALHES:
-            • Usuário excluído: {obj.username}
-            • Role: {obj.role}
-            • Loja: {obj.loja.nome if obj.loja else 'Não vinculada'}
-            • Excluído por: {usuario.username}
-            • Data exclusão: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
-            • IP administrador: {request.remote_addr}
+            â„¹ï¸ DETALHES:
+            â€¢ UsuÃ¡rio excluÃ­do: {obj.username}
+            â€¢ Role: {obj.role}
+            â€¢ Loja: {obj.loja.nome if obj.loja else 'NÃ£o vinculada'}
+            â€¢ ExcluÃ­do por: {usuario.username}
+            â€¢ Data exclusÃ£o: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+            â€¢ IP administrador: {request.remote_addr}
             """
-            enviar_alerta_email("👤 Usuário Excluído", mensagem)
+            enviar_alerta_email("ðŸ‘¤ UsuÃ¡rio ExcluÃ­do", mensagem)
         
         db.session.delete(obj)
         db.session.commit()
-        flash(f"{alvo.capitalize()} excluído com sucesso!", "success")
+        flash(f"{alvo.capitalize()} excluÃ­do com sucesso!", "success")
     except Exception as e:
         db.session.rollback()
         flash(f"Erro ao excluir: {e}", "danger")
@@ -1817,7 +1817,7 @@ def excluir(alvo, id):
         return redirect(url_for(alvo + 's'))
 
 # ==============================================================================
-# ROTAS PARA ATIVAÇÃO DE LICENÇA
+# ROTAS PARA ATIVAÃ‡ÃƒO DE LICENÃ‡A
 # ==============================================================================
 @app.route('/ativar_licenca', methods=['GET', 'POST'])
 def ativar_licenca():
@@ -1826,17 +1826,17 @@ def ativar_licenca():
         fingerprint = request.cookies.get('fp')
         
         if not fingerprint:
-            flash("Fingerprint não detectado. Ative cookies.", "danger")
+            flash("Fingerprint nÃ£o detectado. Ative cookies.", "danger")
             return render_template('ativar_licenca.html')
         
         loja = Loja.query.filter_by(chave_licenca=chave).first()
         
         if not loja:
-            flash("Chave de licença inválida!", "danger")
+            flash("Chave de licenÃ§a invÃ¡lida!", "danger")
             return render_template('ativar_licenca.html')
         
         if not loja.licenca_ativa:
-            flash("Licença desta loja está inativa!", "danger")
+            flash("LicenÃ§a desta loja estÃ¡ inativa!", "danger")
             return render_template('ativar_licenca.html')
         
         maquinas_ativas = Maquina.query.filter_by(
@@ -1845,7 +1845,7 @@ def ativar_licenca():
         ).count()
         
         if maquinas_ativas >= loja.max_maquinas:
-            flash(f"Limite de {loja.max_maquinas} máquina(s) atingido!", "warning")
+            flash(f"Limite de {loja.max_maquinas} mÃ¡quina(s) atingido!", "warning")
             return render_template('ativar_licenca.html')
         
         maquina_existente = Maquina.query.filter_by(
@@ -1863,11 +1863,11 @@ def ativar_licenca():
                 acao='REATIVADA',
                 ip=request.remote_addr,
                 fingerprint=fingerprint,
-                detalhes=f'Máquina reativada. ID: {maquina_existente.id}'
+                detalhes=f'MÃ¡quina reativada. ID: {maquina_existente.id}'
             )
             db.session.add(historico)
             
-            flash("Máquina reativada com sucesso!", "success")
+            flash("MÃ¡quina reativada com sucesso!", "success")
         else:
             nova_maquina = Maquina(
                 loja_id=loja.id,
@@ -1883,11 +1883,11 @@ def ativar_licenca():
                 acao='ATIVADA',
                 ip=request.remote_addr,
                 fingerprint=fingerprint,
-                detalhes=f'Nova máquina ativada. Máquinas ativas: {maquinas_ativas + 1}/{loja.max_maquinas}'
+                detalhes=f'Nova mÃ¡quina ativada. MÃ¡quinas ativas: {maquinas_ativas + 1}/{loja.max_maquinas}'
             )
             db.session.add(historico)
             
-            flash("Licença ativada com sucesso!", "success")
+            flash("LicenÃ§a ativada com sucesso!", "success")
         
         log = LogAcesso(
             loja_id=loja.id,
@@ -1910,11 +1910,11 @@ def solicitar_fingerprint():
 @app.route('/logout')
 def logout():
     session.clear()
-    flash("Você foi desconectado.", "info")
+    flash("VocÃª foi desconectado.", "info")
     return redirect(url_for('login'))
 
 # ==============================================================================
-# INICIALIZAÇÃO DO SISTEMA
+# INICIALIZAÃ‡ÃƒO DO SISTEMA
 # ==============================================================================
 def setup_database():
     with app.app_context():
@@ -1930,7 +1930,7 @@ def setup_database():
             )
             db.session.add(loja)
             db.session.commit()
-            logger.info(">>> Loja padrão criada")
+            logger.info(">>> Loja padrÃ£o criada")
         else:
             if loja.chave_licenca is None:
                 alphabet = string.ascii_letters + string.digits
@@ -1950,53 +1950,53 @@ def setup_database():
             )
             db.session.add(usuario)
             db.session.commit()
-            logger.info(">>> Usuário mestre criado")
+            logger.info(">>> UsuÃ¡rio mestre criado")
         else:
             if not usuario.loja_id:
                 usuario.loja_id = loja.id
             if usuario.role != 'admin':
                 usuario.role = 'admin'
             db.session.commit()
-            logger.info(">>> Usuário mestre verificado")
+            logger.info(">>> UsuÃ¡rio mestre verificado")
         
         mensagem = f"""
-        🚀 SISTEMA FOODCOST INICIADO
+        ðŸš€ SISTEMA FOODCOST INICIADO
         
-        ℹ️ INFORMAÇÕES:
-        • Data inicialização: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
-        • Banco de dados: {'PostgreSQL (Nuvem)' if database_url else 'SQLite Local'}
-        • Modo: {'Produção' if not app.debug else 'Desenvolvimento'}
-        • Loja padrão: {loja.nome}
-        • Usuário mestre: {usuario.username}
+        â„¹ï¸ INFORMAÃ‡Ã•ES:
+        â€¢ Data inicializaÃ§Ã£o: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+        â€¢ Banco de dados: {'PostgreSQL (Nuvem)' if database_url else 'SQLite Local'}
+        â€¢ Modo: {'ProduÃ§Ã£o' if not app.debug else 'Desenvolvimento'}
+        â€¢ Loja padrÃ£o: {loja.nome}
+        â€¢ UsuÃ¡rio mestre: {usuario.username}
         """
-        enviar_alerta_email("🚀 Sistema FoodCost Iniciado", mensagem)
+        enviar_alerta_email("ðŸš€ Sistema FoodCost Iniciado", mensagem)
 
 # ==============================================================================
-# VERIFICAÇÃO E CRIAÇÃO DO BANCO DE DADOS
+# VERIFICAÃ‡ÃƒO E CRIAÃ‡ÃƒO DO BANCO DE DADOS
 # ==============================================================================
 from sqlalchemy import text
 
 def init_database():
-    """Inicializa o banco de dados e cria tabelas se necessário"""
+    """Inicializa o banco de dados e cria tabelas se necessÃ¡rio"""
     with app.app_context():
         try:
             db.session.execute(text("SELECT 1"))
-            print("✅ Conexão com PostgreSQL estabelecida")
+            print("âœ… ConexÃ£o com PostgreSQL estabelecida")
             
             inspector = db.inspect(db.engine)
             existing_tables = inspector.get_table_names()
             
             if existing_tables:
-                print(f"✅ Banco já contém {len(existing_tables)} tabelas")
+                print(f"âœ… Banco jÃ¡ contÃ©m {len(existing_tables)} tabelas")
             else:
-                print("⚠️  Nenhuma tabela encontrada. Criando todas as tabelas...")
+                print("âš ï¸  Nenhuma tabela encontrada. Criando todas as tabelas...")
                 db.create_all()
-                print("✅ Todas as tabelas criadas com sucesso!")
+                print("âœ… Todas as tabelas criadas com sucesso!")
                 
         except Exception as e:
-            print(f"⚠️  Erro ao inicializar banco: {e}")
+            print(f"âš ï¸  Erro ao inicializar banco: {e}")
 
-# Executar na inicialização
+# Executar na inicializaÃ§Ã£o
 init_database()
 def validar_limite_sistema():
     """Verifica e aplica limites do sistema ao iniciar"""
@@ -2004,69 +2004,69 @@ def validar_limite_sistema():
         total_lojas = Loja.query.count()
         
         if total_lojas > 10:
-            # Situação CRÍTICA: Mais de 10 lojas (não deveria acontecer)
-            logger.error(f"⚠️  ALERTA CRÍTICO: Sistema com {total_lojas} lojas (limite: 10)")
+            # SituaÃ§Ã£o CRÃTICA: Mais de 10 lojas (nÃ£o deveria acontecer)
+            logger.error(f"âš ï¸  ALERTA CRÃTICO: Sistema com {total_lojas} lojas (limite: 10)")
             
-            # Enviar alerta de emergência
+            # Enviar alerta de emergÃªncia
             mensagem = f"""
-            🚨 EMERGÊNCIA: SISTEMA EXCEDEU LIMITE DE LOJAS!
+            ðŸš¨ EMERGÃŠNCIA: SISTEMA EXCEDEU LIMITE DE LOJAS!
             
-            📋 SITUAÇÃO CRÍTICA:
-            • Limite configurado: 10 lojas
-            • Total atual no banco: {total_lojas} lojas
-            • Excedeu em: {total_lojas - 10} lojas
-            • Data verificação: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+            ðŸ“‹ SITUAÃ‡ÃƒO CRÃTICA:
+            â€¢ Limite configurado: 10 lojas
+            â€¢ Total atual no banco: {total_lojas} lojas
+            â€¢ Excedeu em: {total_lojas - 10} lojas
+            â€¢ Data verificaÃ§Ã£o: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
             
-            🔴 AÇÕES NECESSÁRIAS:
+            ðŸ”´ AÃ‡Ã•ES NECESSÃRIAS:
             1. Investigar como foram criadas lojas extras
             2. Desativar lojas excedentes manualmente
-            3. Verificar segurança do sistema
+            3. Verificar seguranÃ§a do sistema
             """
-            enviar_alerta_email("🚨 EMERGÊNCIA: Limite de Lojas Excedido", mensagem)
+            enviar_alerta_email("ðŸš¨ EMERGÃŠNCIA: Limite de Lojas Excedido", mensagem)
             
-            # Desativar licenças das lojas extras (mantém apenas as 10 primeiras)
+            # Desativar licenÃ§as das lojas extras (mantÃ©m apenas as 10 primeiras)
             lojas = Loja.query.order_by(Loja.id).all()
             for i, loja in enumerate(lojas):
-                if i >= 10:  # A partir da 11ª loja
+                if i >= 10:  # A partir da 11Âª loja
                     loja.licenca_ativa = False
                     loja.ativo = False
                     
-                    # Registrar no histórico
+                    # Registrar no histÃ³rico
                     historico = HistoricoLicenca(
                         loja_id=loja.id,
                         chave_licenca=loja.chave_licenca,
                         acao='BLOQUEADA_LIMITE',
                         ip='SISTEMA',
                         fingerprint='LIMITE_SISTEMA',
-                        detalhes=f'Loja bloqueada automaticamente por exceder limite de 10 lojas. Posição: {i+1}'
+                        detalhes=f'Loja bloqueada automaticamente por exceder limite de 10 lojas. PosiÃ§Ã£o: {i+1}'
                     )
                     db.session.add(historico)
                     
                     logger.warning(f"Loja '{loja.nome}' (ID: {loja.id}) bloqueada por exceder limite")
             
             db.session.commit()
-            logger.info(f"✅ Limite aplicado: {min(total_lojas, 10)} lojas ativas")
+            logger.info(f"âœ… Limite aplicado: {min(total_lojas, 10)} lojas ativas")
         
         elif total_lojas == 10:
-            logger.info(f"✅ Sistema com limite máximo: {total_lojas}/10 lojas")
+            logger.info(f"âœ… Sistema com limite mÃ¡ximo: {total_lojas}/10 lojas")
         else:
-            logger.info(f"✅ Sistema com {total_lojas}/10 lojas. Vagas: {10 - total_lojas}")
+            logger.info(f"âœ… Sistema com {total_lojas}/10 lojas. Vagas: {10 - total_lojas}")
 
-# Executar na inicialização
+# Executar na inicializaÃ§Ã£o
 validar_limite_sistema()
 
 # ==============================================================================
-# CONFIGURAÇÃO PARA PRODUÇÃO (RENDER)
+# CONFIGURAÃ‡ÃƒO PARA PRODUÃ‡ÃƒO (RENDER)
 # ==============================================================================
 
-# Criar banco de dados se não existir
-# Flag para controlar primeira execução
+# Criar banco de dados se nÃ£o existir
+# Flag para controlar primeira execuÃ§Ã£o
 # ==============================================================================
-# CONFIGURAÇÃO PARA PRODUÇÃO (RENDER) - ATUALIZADO PARA FLASK 2.3+
+# CONFIGURAÃ‡ÃƒO PARA PRODUÃ‡ÃƒO (RENDER) - ATUALIZADO PARA FLASK 2.3+
 # ==============================================================================
 
 # ==============================================================================
-# CONFIGURAÇÃO PARA PRODUÇÃO (RENDER) - ATUALIZADO PARA FLASK 2.3+
+# CONFIGURAÃ‡ÃƒO PARA PRODUÃ‡ÃƒO (RENDER) - ATUALIZADO PARA FLASK 2.3+
 # ==============================================================================
 
 # Substituir before_first_request (depreciado no Flask 2.3+)
@@ -2076,7 +2076,7 @@ first_request_flag = False
 def initialize_database():
     global first_request_flag
     if not first_request_flag:
-        # Criar banco de dados se não existir
+        # Criar banco de dados se nÃ£o existir
         db.create_all()
         setup_database()
         validar_limite_sistema()
@@ -2087,17 +2087,17 @@ def initialize_database():
 def health_check():
     return jsonify({'status': 'ok', 'timestamp': datetime.now().isoformat()}), 200
 
-# Página de erro 404
+# PÃ¡gina de erro 404
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
 
-# Página de erro 500  
+# PÃ¡gina de erro 500  
 @app.errorhandler(500)
 def internal_server_error(e):
     return render_template('500.html'), 500
 
-# Adicione esta função ao app.py (antes do if __name__ == '__main__':)
+# Adicione esta funÃ§Ã£o ao app.py (antes do if __name__ == '__main__':)
 def check_and_fix_database():
     """Verifica e corrige estrutura do banco"""
     from sqlalchemy import inspect, text
@@ -2108,16 +2108,17 @@ def check_and_fix_database():
     columns = [col['name'] for col in inspector.get_columns('maquinas')]
     
     if 'observacoes' not in columns:
-        print("⚠️  Coluna 'observacoes' não existe. Adicionando...")
+        print("âš ï¸  Coluna 'observacoes' nÃ£o existe. Adicionando...")
         try:
             db.session.execute(text("ALTER TABLE maquinas ADD COLUMN observacoes TEXT"))
             db.session.commit()
-            print("✅ Coluna 'observacoes' adicionada com sucesso!")
+            print("âœ… Coluna 'observacoes' adicionada com sucesso!")
         except Exception as e:
-            print(f"❌ Erro ao adicionar coluna: {e}")
+            print(f"âŒ Erro ao adicionar coluna: {e}")
             db.session.rollback()
 
 if __name__ == '__main__':
-    # Modo produção
+    # Modo produÃ§Ã£o
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
+
